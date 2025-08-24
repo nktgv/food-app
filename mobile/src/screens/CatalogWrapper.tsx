@@ -1,0 +1,42 @@
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import CatalogScreen from './CatalogScreen';
+import ProductScreen from './ProductScreen';
+import CheckoutScreen from './CheckoutScreen';
+import OrderScreen from './OrderScreen';
+
+export type CatalogStackParamList = {
+  CatalogMain: undefined;
+  Product: { id: string };
+  Checkout: undefined;
+  Order: { id: string };
+};
+
+const CatalogStack = createNativeStackNavigator<CatalogStackParamList>();
+
+export default function CatalogWrapper() {
+  return (
+    <CatalogStack.Navigator>
+      <CatalogStack.Screen 
+        name="CatalogMain" 
+        component={CatalogScreen} 
+        options={{ title: 'Каталог' }} 
+      />
+      <CatalogStack.Screen 
+        name="Product" 
+        component={ProductScreen} 
+        options={{ title: 'Товар' }} 
+      />
+      <CatalogStack.Screen 
+        name="Checkout" 
+        component={CheckoutScreen} 
+        options={{ title: 'Оформление' }} 
+      />
+      <CatalogStack.Screen 
+        name="Order" 
+        component={OrderScreen} 
+        options={{ title: 'Заказ' }} 
+      />
+    </CatalogStack.Navigator>
+  );
+}
