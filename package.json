@@ -1,0 +1,27 @@
+{
+  "name": "food-app",
+  "version": "1.0.0",
+  "description": "Мобильное приложение для заказа еды",
+  "scripts": {
+    "install:all": "npm install && cd mobile && npm install && cd ../backend && go mod tidy",
+    "start:backend": "cd backend && go run main.go",
+    "start:mobile": "cd mobile && npm start",
+    "build:backend": "cd backend && go build -o foodapp-backend .",
+    "test:backend": "cd backend && go test ./...",
+    "test:mobile": "cd mobile && npx tsc --noEmit",
+    "dev": "concurrently \"npm run start:backend\" \"npm run start:mobile\"",
+    "clean": "cd backend && rm -f foodapp-backend && cd ../mobile && rm -rf node_modules && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "go",
+    "food-delivery",
+    "mobile-app"
+  ],
+  "author": "Food App Team",
+  "license": "MIT"
+}

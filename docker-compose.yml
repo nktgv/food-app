@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      - GIN_MODE=release
+    restart: unless-stopped
+    networks:
+      - food-app-network
+
+  # PostgreSQL для продакшена
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: foodapp
+      POSTGRES_USER: foodapp
+      POSTGRES_PASSWORD: foodapp123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - food-app-network
+
+  # Redis для кеша
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - food-app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  food-app-network:
+    driver: bridge
