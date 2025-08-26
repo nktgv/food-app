@@ -1196,6 +1196,17 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
     />
   );
 
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <PromoBanner onPress={() => {}} />
+      <CategoryFilter
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={handleSelectCategory}
+      />
+    </View>
+  );
+
   if (loading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -1212,21 +1223,14 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.surface} />
       
-      <PromoBanner onPress={() => console.log('Promo banner pressed')} />
-
-      <CategoryFilter
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onSelectCategory={handleSelectCategory}
-      />
-
       <FlatList
         data={filteredProducts}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderProduct}
         numColumns={2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.listContainer}
+        ListHeaderComponent={renderHeader}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -1260,7 +1264,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -1269,12 +1272,18 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-  },
-  listContainer: {
-    padding: 16,
+    color: '#666',
   },
   row: {
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
+  },
+  listContainer: {
+    paddingBottom: 20,
+  },
+  header: {
+    backgroundColor: '#fff', // Or any other background color for the header
+    paddingBottom: 10, // Adjust as needed for spacing
   },
   emptyContainer: {
     flex: 1,
@@ -1287,12 +1296,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     textAlign: 'center',
   },
 });
