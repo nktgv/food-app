@@ -1,354 +1,306 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, StatusBar, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTheme, useThemeContext } from '../theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
-import { ProfileStackParamList } from './ProfileWrapper';
 
-type ProfileScreenNavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'ProfileMain'>;
-
-interface ProfileScreenProps {
-  navigation: ProfileScreenNavigationProp;
-}
-
-export default function ProfileScreen({ navigation }: ProfileScreenProps) {
+export default function ProfileScreen() {
   const theme = useTheme();
-  const { themeMode, setThemeMode, systemScheme } = useThemeContext();
   
   // Profile state
-  const [profile, setProfile] = useState({
-    name: 'Александр Петров',
-    email: 'alex.petrov@example.com',
-    phone: '+7 (999) 123-45-67',
+  const [profileData, setProfileData] = useState({
+    name: 'Владислав',
+    phone: '+7 (910) 827-52-18',
   });
 
   // Loyalty program state
   const [loyaltyData] = useState({
     bonusBalance: 1250,
+    cashbackLevel: 7, // 7% cashback
+    levelName: 'Gold',
     totalSpent: 25000,
-    level: 'Gold',
-    bonusRate: 15, // 15% возврат
-    nextLevelSpend: 5000, // осталось потратить до следующего уровня
+    nextLevelSpend: 5000,
   });
 
-  // Edit modal state
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editedProfile, setEditedProfile] = useState(profile);
-
-  const handleEditProfile = () => {
-    setEditedProfile(profile);
-    setEditModalVisible(true);
-  };
-
-  const handleSaveProfile = () => {
-    setProfile(editedProfile);
-    setEditModalVisible(false);
-    Alert.alert('Успех', 'Профиль обновлен!');
-  };
-
-  const getLoyaltyLevelInfo = (level: string) => {
-    switch (level) {
-      case 'Silver':
-        return { color: ['#C0C0C0', '#E8E8E8'] as [string, string], icon: 'medal-outline', rate: 5 };
-      case 'Gold':
-        return { color: ['#D4AF37', '#F7E98E'] as [string, string], icon: 'medal', rate: 15 };
-      case 'Platinum':
-        return { color: ['#E5E4E2', '#F8F8FF'] as [string, string], icon: 'trophy', rate: 20 };
+  const getLoyaltyLevelInfo = (cashbackLevel: number) => {
+    switch (cashbackLevel) {
+      case 1:
+        return { 
+          name: 'Новичок', 
+          color: '#E0E0E0',
+          icon: 'star-outline',
+          description: 'Начинающий участник'
+        };
+      case 5:
+        return { 
+          name: 'Бронза', 
+          color: '#CD7F32',
+          icon: 'medal',
+          description: 'Активный клиент'
+        };
+      case 7:
+        return { 
+          name: 'Золото', 
+          color: '#FFD700',
+          icon: 'trophy',
+          description: 'Постоянный клиент'
+        };
+      case 10:
+        return { 
+          name: 'Платина', 
+          color: '#E5E4E2',
+          icon: 'diamond',
+          description: 'VIP клиент'
+        };
       default:
-        return { color: ['#8B4513', '#DEB887'] as [string, string], icon: 'ribbon-outline', rate: 5 };
+        return { 
+          name: 'Новичок', 
+          color: '#E0E0E0',
+          icon: 'star-outline',
+          description: 'Начинающий участник'
+        };
     }
   };
 
-  const handleThemePress = () => {
+  const levelInfo = getLoyaltyLevelInfo(loyaltyData.cashbackLevel);
+
+  const handleLoyaltyPress = () => {
+    Alert.alert('Программа лояльности', 'Открывается программа лояльности с детальной информацией о бонусах и уровнях');
+  };
+
+  const handleOrdersPress = () => {
+    Alert.alert('Мои заказы', 'Открывается история заказов с возможностью отслеживания статусов');
+  };
+
+  const handleProfilePress = () => {
+    setEditModalVisible(true);
+  };
+
+  const handleAboutAppPress = () => {
+    Alert.alert('О приложении', 'Версия 1.0.0\nFast Food Family\nПоддержка: support@fastfoodfamily.com');
+  };
+
+  const handleLogoutPress = () => {
     Alert.alert(
-      'Выбор темы',
-      `Системная тема: ${systemScheme || 'неизвестно'}`,
+      'Выйти из приложения',
+      'Вы уверены, что хотите выйти?',
       [
         {
-          text: 'Авто (системная)',
-          onPress: () => setThemeMode('auto'),
-          style: themeMode === 'auto' ? 'default' : 'cancel'
+          text: 'Отмена',
+          style: 'cancel',
         },
         {
-          text: 'Светлая',
-          onPress: () => setThemeMode('light'),
-          style: themeMode === 'light' ? 'default' : 'cancel'
+          text: 'Выйти',
+          style: 'destructive',
+          onPress: () => Alert.alert('Выход', 'Вы вышли из приложения'),
         },
-        {
-          text: 'Темная',
-          onPress: () => setThemeMode('dark'),
-          style: themeMode === 'dark' ? 'default' : 'cancel'
-        }
       ]
     );
   };
 
-  const handlePolicyPress = () => {
-    navigation.navigate('Policy');
+  const handleSaveProfile = () => {
+    Alert.alert('Успех', 'Профиль обновлен!');
+    setEditModalVisible(false);
   };
 
-  const handleTermsPress = () => {
-    navigation.navigate('Terms');
-  };
+  // Edit modal state
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editedProfile, setEditedProfile] = useState(profileData);
 
-  const handleSupportPress = () => {
-    navigation.navigate('Support');
+  const openEditModal = () => {
+    setEditedProfile(profileData);
+    setEditModalVisible(true);
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView style={styles.scrollView}>
+      <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.surface} />
+      
+      {/* Header with username in corner */}
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Text style={styles.userName}>{profileData.name}</Text>
+          <Text style={styles.userPhone}>{profileData.phone}</Text>
+        </View>
+      </View>
 
-
-
-        {/* Карта лояльности */}
-        <View style={[styles.section, { backgroundColor: 'transparent', padding: 0 }]}>
-          <LinearGradient
-            colors={getLoyaltyLevelInfo(loyaltyData.level).color}
-            style={styles.loyaltyCard}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <View style={styles.loyaltyHeader}>
-              <View>
-                <Text style={styles.loyaltyTitle}>FAST FOOD FAMILY</Text>
-                <Text style={styles.loyaltySubtitle}>Карта лояльности</Text>
-              </View>
-              <Ionicons 
-                name={getLoyaltyLevelInfo(loyaltyData.level).icon as any} 
-                size={32} 
-                color="rgba(0, 0, 0, 0.8)" 
-              />
+      {/* Loyalty Card */}
+      <View style={styles.loyaltyCard}>
+        <View style={styles.loyaltyHeader}>
+          <View style={styles.loyaltyLeft}>
+            <View style={[styles.levelIconContainer, { backgroundColor: '#808080' }]}>
+              <Ionicons name={levelInfo.icon as any} size={24} color="#fff" />
             </View>
-            
-            <View style={styles.loyaltyContent}>
-              <View style={styles.loyaltyBalance}>
-                <Text style={styles.balanceLabel}>Баланс бонусов</Text>
-                <Text style={styles.balanceValue}>{loyaltyData.bonusBalance} ₽</Text>
-              </View>
-              
-              <View style={styles.loyaltyLevel}>
-                <Text style={styles.levelLabel}>Уровень: {loyaltyData.level}</Text>
-                <Text style={styles.levelRate}>Возврат: {loyaltyData.bonusRate}%</Text>
-              </View>
+            <View style={styles.loyaltyInfo}>
+              <Text style={styles.levelName}>{levelInfo.name}</Text>
+              <Text style={styles.levelDescription}>{levelInfo.description}</Text>
             </View>
-            
-            <View style={styles.loyaltyProgress}>
+          </View>
+          <View style={styles.loyaltyRight}>
+            <Text style={styles.cashbackPercent}>{loyaltyData.cashbackLevel}%</Text>
+            <Text style={styles.cashbackLabel}>Кешбэк</Text>
+          </View>
+        </View>
+        
+        <View style={styles.loyaltyContent}>
+          <View style={styles.bonusSection}>
+            <Text style={styles.bonusLabel}>Баланс бонусов</Text>
+            <Text style={styles.bonusAmount}>{loyaltyData.bonusBalance}</Text>
+          </View>
+          
+          {loyaltyData.cashbackLevel === 10 ? (
+            <View style={styles.vipMessage}>
+              <Ionicons name="trophy" size={20} color="#FFD700" />
+              <Text style={styles.vipText}>Поздравляем! Вы прошли все уровни!</Text>
+            </View>
+          ) : (
+            <View style={styles.progressSection}>
               <Text style={styles.progressText}>
-                До Platinum: осталось потратить {loyaltyData.nextLevelSpend} ₽
+                До следующего уровня: {loyaltyData.nextLevelSpend} ₽
               </Text>
               <View style={styles.progressBar}>
                 <View 
                   style={[
                     styles.progressFill, 
-                    { width: `${Math.max(10, ((loyaltyData.totalSpent % 30000) / 30000) * 100)}%` }
+                    { 
+                      width: `${Math.max(10, ((loyaltyData.totalSpent % 30000) / 30000) * 100)}%`,
+                      backgroundColor: levelInfo.color
+                    }
                   ]} 
                 />
               </View>
             </View>
-          </LinearGradient>
+          )}
         </View>
+      </View>
 
-        <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Информация о пользователе</Text>
-          
-          <View style={[styles.infoCard, { borderBottomColor: theme.colors.divider }]}>
-            <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>Имя:</Text>
-            <Text style={[styles.infoValue, { color: theme.colors.textPrimary }]}>{profile.name}</Text>
-          </View>
-          <View style={[styles.infoCard, { borderBottomColor: theme.colors.divider }]}>
-            <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>Email:</Text>
-            <Text style={[styles.infoValue, { color: theme.colors.textPrimary }]}>{profile.email}</Text>
-          </View>
-          <View style={[styles.infoCard, { borderBottomColor: theme.colors.divider }]}>
-            <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>Телефон:</Text>
-            <Text style={[styles.infoValue, { color: theme.colors.textPrimary }]}>{profile.phone}</Text>
-          </View>
-          
-          <TouchableOpacity onPress={handleEditProfile} style={[styles.fullEditButton, { backgroundColor: theme.colors.primary }]}>
-            <Ionicons name="pencil" size={20} color={theme.colors.surface} />
-            <Text style={[styles.fullEditButtonText, { color: theme.colors.surface }]}>Изменить профиль</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Последние три заказа</Text>
-          
-          <View style={[styles.orderItem, { borderBottomColor: theme.colors.divider }]}>
-            <View style={styles.orderInfo}>
-              <Text style={[styles.orderTitle, { color: theme.colors.textPrimary }]}>Заказ #2045</Text>
-              <Text style={[styles.orderDate, { color: theme.colors.textSecondary }]}>25 августа, 18:45</Text>
+      {/* Menu Items */}
+      <View style={styles.menuContainer}>
+        {/* Loyalty Program - First Button */}
+        <TouchableOpacity style={styles.menuItem} onPress={handleLoyaltyPress} activeOpacity={0.7}>
+          <View style={styles.menuItemLeft}>
+            <View style={styles.menuIconContainer}>
+              <Ionicons name="card" size={24} color="#808080" />
             </View>
-            <View style={styles.orderStatus}>
-              <Text style={[styles.orderPrice, { color: theme.colors.textPrimary }]}>1,250 ₽</Text>
-              <Text style={[styles.statusText, { color: theme.colors.success }]}>Доставлен</Text>
+            <View style={styles.menuText}>
+              <Text style={styles.menuTitle}>Программа лояльности</Text>
+              <Text style={styles.menuSubtitle}>Бонусы, скидки, специальные предложения</Text>
             </View>
           </View>
-
-          <View style={[styles.orderItem, { borderBottomColor: theme.colors.divider }]}>
-            <View style={styles.orderInfo}>
-              <Text style={[styles.orderTitle, { color: theme.colors.textPrimary }]}>Заказ #2034</Text>
-              <Text style={[styles.orderDate, { color: theme.colors.textSecondary }]}>22 августа, 14:20</Text>
-            </View>
-            <View style={styles.orderStatus}>
-              <Text style={[styles.orderPrice, { color: theme.colors.textPrimary }]}>890 ₽</Text>
-              <Text style={[styles.statusText, { color: theme.colors.success }]}>Доставлен</Text>
-            </View>
-          </View>
-
-          <View style={[styles.orderItem, { borderBottomColor: theme.colors.divider }]}>
-            <View style={styles.orderInfo}>
-              <Text style={[styles.orderTitle, { color: theme.colors.textPrimary }]}>Заказ #2021</Text>
-              <Text style={[styles.orderDate, { color: theme.colors.textSecondary }]}>19 августа, 20:15</Text>
-            </View>
-            <View style={styles.orderStatus}>
-              <Text style={[styles.orderPrice, { color: theme.colors.textPrimary }]}>1,540 ₽</Text>
-              <Text style={[styles.statusText, { color: theme.colors.success }]}>Доставлен</Text>
-            </View>
-          </View>
-
-          <TouchableOpacity style={[styles.moreButton, { backgroundColor: theme.colors.primary }]}>
-            <Text style={[styles.moreButtonText, { color: theme.colors.surface }]}>Показать ещё</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Настройки</Text>
-          <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.colors.divider }]}>
-            <Text style={[styles.menuText, { color: theme.colors.textPrimary }]}>Уведомления</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.colors.divider }]}>
-            <Text style={[styles.menuText, { color: theme.colors.textPrimary }]}>Язык</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.colors.divider }]} onPress={handleThemePress}>
-            <View style={styles.menuItemContent}>
-              <View style={styles.menuItemLeft}>
-                <Ionicons 
-                  name={theme.mode === 'dark' ? 'moon' : 'sunny'} 
-                  size={20} 
-                  color={theme.colors.primary} 
-                  style={styles.menuIcon}
-                />
-                <Text style={[styles.menuText, { color: theme.colors.textPrimary }]}>Тема</Text>
-              </View>
-              <Text style={[styles.menuSubText, { color: theme.colors.textSecondary }]}>
-                {themeMode === 'auto' ? 'Авто' : themeMode === 'dark' ? 'Темная' : 'Светлая'}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>О приложении</Text>
-          <View style={[styles.infoCard, { borderBottomColor: theme.colors.divider }]}>
-            <Text style={[styles.infoLabel, { color: theme.colors.textSecondary }]}>Версия:</Text>
-            <Text style={[styles.infoValue, { color: theme.colors.textPrimary }]}>1.0.0</Text>
-          </View>
-          <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.colors.divider }]} onPress={handlePolicyPress}>
-            <Text style={[styles.menuText, { color: theme.colors.textPrimary }]}>Политика конфиденциальности</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.colors.divider }]} onPress={handleTermsPress}>
-            <Text style={[styles.menuText, { color: theme.colors.textPrimary }]}>Условия использования</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.colors.divider }]} onPress={handleSupportPress}>
-            <Text style={[styles.menuText, { color: theme.colors.textPrimary }]}>Поддержка</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity style={[styles.logoutButton, { backgroundColor: theme.colors.error }]}>
-          <Text style={[styles.logoutText, { color: theme.colors.surface }]}>Выйти</Text>
+          <Ionicons name="chevron-forward" size={20} color="#ccc" />
         </TouchableOpacity>
-      </ScrollView>
 
-      {/* Modal for editing profile */}
+        {/* My Orders */}
+        <TouchableOpacity style={styles.menuItem} onPress={handleOrdersPress} activeOpacity={0.7}>
+          <View style={styles.menuItemLeft}>
+            <View style={styles.menuIconContainer}>
+              <Ionicons name="bag" size={24} color="#808080" />
+            </View>
+            <View style={styles.menuText}>
+              <Text style={styles.menuTitle}>Мои заказы</Text>
+              <Text style={styles.menuSubtitle}>История заказов и статусы</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#ccc" />
+        </TouchableOpacity>
+
+        {/* Profile */}
+        <TouchableOpacity style={styles.menuItem} onPress={openEditModal} activeOpacity={0.7}>
+          <View style={styles.menuItemLeft}>
+            <View style={styles.menuIconContainer}>
+              <Ionicons name="person" size={24} color="#808080" />
+            </View>
+            <View style={styles.menuText}>
+              <Text style={styles.menuTitle}>Мои данные</Text>
+              <Text style={styles.menuSubtitle}>Редактировать профиль</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#ccc" />
+        </TouchableOpacity>
+
+        {/* About App */}
+        <TouchableOpacity style={styles.menuItem} onPress={handleAboutAppPress} activeOpacity={0.7}>
+          <View style={styles.menuItemLeft}>
+            <View style={styles.menuIconContainer}>
+              <Ionicons name="information-circle" size={24} color="#808080" />
+            </View>
+            <View style={styles.menuText}>
+              <Text style={styles.menuTitle}>О приложении</Text>
+              <Text style={styles.menuSubtitle}>Версия, информация, поддержка</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#ccc" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Logout Button - Subtle */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogoutPress} activeOpacity={0.7}>
+        <Ionicons name="log-out-outline" size={20} color="#999" />
+        <Text style={styles.logoutText}>Выйти</Text>
+      </TouchableOpacity>
+
+      {/* Edit Profile Modal */}
       <Modal
         visible={editModalVisible}
-        transparent={true}
+        transparent
         animationType="slide"
         onRequestClose={() => setEditModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: theme.colors.divider }]}>
+            <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: theme.colors.textPrimary }]}>Редактировать профиль</Text>
               <TouchableOpacity onPress={() => setEditModalVisible(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
-
-            <ScrollView style={styles.modalBody}>
+            
+            <View style={styles.modalBody}>
               <View style={styles.inputGroup}>
                 <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>Имя</Text>
                 <TextInput
-                  style={[
-                    styles.textInput, 
-                    { 
-                      backgroundColor: theme.colors.background, 
-                      borderColor: theme.colors.divider,
-                      color: theme.colors.textPrimary
-                    }
-                  ]}
+                  style={[styles.input, { 
+                    borderColor: theme.colors.border,
+                    color: theme.colors.textPrimary,
+                    backgroundColor: theme.colors.background
+                  }]}
                   value={editedProfile.name}
-                  onChangeText={(text) => setEditedProfile({...editedProfile, name: text})}
+                  onChangeText={(text) => setEditedProfile({ ...editedProfile, name: text })}
                   placeholder="Введите имя"
-                  placeholderTextColor={theme.colors.textSecondary}
+                  placeholderTextColor={theme.colors.textLight}
                 />
               </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>Email</Text>
-                <TextInput
-                  style={[
-                    styles.textInput, 
-                    { 
-                      backgroundColor: theme.colors.background, 
-                      borderColor: theme.colors.divider,
-                      color: theme.colors.textPrimary
-                    }
-                  ]}
-                  value={editedProfile.email}
-                  onChangeText={(text) => setEditedProfile({...editedProfile, email: text})}
-                  placeholder="Введите email"
-                  placeholderTextColor={theme.colors.textSecondary}
-                  keyboardType="email-address"
-                />
-              </View>
-
+              
               <View style={styles.inputGroup}>
                 <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>Телефон</Text>
                 <TextInput
-                  style={[
-                    styles.textInput, 
-                    { 
-                      backgroundColor: theme.colors.background, 
-                      borderColor: theme.colors.divider,
-                      color: theme.colors.textPrimary
-                    }
-                  ]}
+                  style={[styles.input, { 
+                    borderColor: theme.colors.border,
+                    color: theme.colors.textPrimary,
+                    backgroundColor: theme.colors.background
+                  }]}
                   value={editedProfile.phone}
-                  onChangeText={(text) => setEditedProfile({...editedProfile, phone: text})}
+                  onChangeText={(text) => setEditedProfile({ ...editedProfile, phone: text })}
                   placeholder="Введите телефон"
-                  placeholderTextColor={theme.colors.textSecondary}
+                  placeholderTextColor={theme.colors.textLight}
                   keyboardType="phone-pad"
                 />
               </View>
-            </ScrollView>
-
+            </View>
+            
             <View style={styles.modalFooter}>
               <TouchableOpacity 
-                style={[styles.cancelButton, { borderColor: theme.colors.divider }]} 
+                style={[styles.cancelButton, { borderColor: theme.colors.border }]}
                 onPress={() => setEditModalVisible(false)}
               >
                 <Text style={[styles.cancelButtonText, { color: theme.colors.textSecondary }]}>Отмена</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={[styles.saveButton, { backgroundColor: theme.colors.primary }]} 
+                style={[styles.saveButton, { backgroundColor: theme.colors.primary }]}
                 onPress={handleSaveProfile}
               >
-                <Text style={[styles.saveButtonText, { color: theme.colors.surface }]}>Сохранить</Text>
+                <Text style={styles.saveButtonText}>Сохранить</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -362,217 +314,227 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
+  header: {
+    paddingTop: 16,
+    paddingBottom: 12,
+    paddingHorizontal: 20,
+    alignItems: 'flex-end',
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
   },
-  section: {
-    marginTop: 20,
-    marginHorizontal: 16,
-    borderRadius: 12,
-    padding: 16,
+  headerTop: {
+    alignItems: 'flex-end',
   },
-
-  sectionTitle: {
+  userName: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
+    color: '#2C2C2C',
+    marginBottom: 2,
+    letterSpacing: 0.3,
   },
-  editButton: {
+  userPhone: {
+    fontSize: 13,
+    color: '#8E8E93',
+    fontWeight: '400',
+    letterSpacing: 0.2,
+  },
+  loyaltyCard: {
+    marginHorizontal: 16,
+    borderRadius: 16,
+    padding: 20,
+    marginTop: 12,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  loyaltyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  loyaltyLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+  },
+  levelIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  loyaltyInfo: {
+    flex: 1,
+  },
+  levelName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2C2C2C',
+    marginBottom: 4,
+  },
+  levelDescription: {
+    fontSize: 14,
+    color: '#6B6B6B',
+  },
+  loyaltyRight: {
+    alignItems: 'center',
+    minWidth: 60,
+  },
+  cashbackPercent: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FF8C42',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  cashbackLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B6B6B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+  loyaltyContent: {
+    marginTop: 5,
+  },
+  bonusSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingVertical: 15,
+    paddingHorizontal: 16,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  bonusLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2C2C2C',
+  },
+  bonusAmount: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FF8C42',
+  },
+  progressSection: {
+    marginTop: 5,
+  },
+  progressText: {
+    fontSize: 13,
+    color: '#6B6B6B',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  vipMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 15,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
     borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  vipText: {
+    fontSize: 12,
+    color: '#6B6B6B',
+    marginLeft: 6,
+    fontStyle: 'italic',
+  },
+  menuContainer: {
+    marginTop: 16,
+    marginHorizontal: 16,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    backgroundColor: '#fff',
+    marginBottom: 1,
+  },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  menuIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f8f9fa',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  menuText: {
+    flex: 1,
+  },
+  menuTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2C2C2C',
+    marginBottom: 4,
+  },
+  menuSubtitle: {
+    fontSize: 13,
+    color: '#6B6B6B',
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+    margin: 16,
+    marginBottom: 32,
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: '#ccc',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  editText: {
-    fontSize: 14,
-    marginLeft: 6,
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  fullEditButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  fullEditButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-    letterSpacing: 0.3,
-  },
-  
-  // Loyalty Card Styles
-  loyaltyCard: {
-    marginHorizontal: 16,
-    borderRadius: 16,
-    padding: 20,
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  loyaltyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
-  loyaltyTitle: {
-    color: 'rgba(0, 0, 0, 0.9)',
-    fontSize: 22,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-    textShadowColor: 'rgba(255, 255, 255, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  loyaltySubtitle: {
-    color: 'rgba(0, 0, 0, 0.8)',
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 2,
-    textShadowColor: 'rgba(255, 255, 255, 0.6)',
-    textShadowOffset: { width: 0.5, height: 0.5 },
-    textShadowRadius: 1,
-  },
-  loyaltyContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  loyaltyBalance: {
-    flex: 1,
-  },
-  balanceLabel: {
-    color: 'rgba(0, 0, 0, 0.75)',
-    fontSize: 14,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-    letterSpacing: 1.0,
-    textShadowColor: 'rgba(255, 255, 255, 0.5)',
-    textShadowOffset: { width: 0.5, height: 0.5 },
-    textShadowRadius: 1,
-  },
-  balanceValue: {
-    color: 'rgba(0, 0, 0, 0.95)',
-    fontSize: 30,
-    fontWeight: '900',
-    textShadowColor: 'rgba(255, 255, 255, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  loyaltyLevel: {
-    alignItems: 'flex-end',
-  },
-  levelLabel: {
-    color: 'rgba(0, 0, 0, 0.8)',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 2,
-    textShadowColor: 'rgba(255, 255, 255, 0.5)',
-    textShadowOffset: { width: 0.5, height: 0.5 },
-    textShadowRadius: 1,
-  },
-  levelRate: {
-    color: 'rgba(0, 0, 0, 0.95)',
-    fontSize: 20,
-    fontWeight: '900',
-    textShadowColor: 'rgba(255, 255, 255, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  loyaltyProgress: {
-    marginTop: 5,
-  },
-  progressText: {
-    color: 'rgba(0, 0, 0, 0.8)',
-    fontSize: 13,
-    marginBottom: 8,
-    fontWeight: '600',
-    textShadowColor: 'rgba(255, 255, 255, 0.4)',
-    textShadowOffset: { width: 0.5, height: 0.5 },
-    textShadowRadius: 1,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 3,
-  },
-  
-  // Original styles
-  infoCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-  },
-  infoLabel: {
-    fontSize: 16,
-  },
-  infoValue: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  menuItem: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  menuText: {
-    fontSize: 16,
-  },
-  menuItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flex: 1,
-  },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  menuIcon: {
-    marginRight: 12,
-  },
-  menuSubText: {
-    fontSize: 14,
-  },
-  logoutButton: {
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
   logoutText: {
     fontSize: 16,
     fontWeight: '600',
+    marginLeft: 8,
+    color: '#999',
   },
-  
-  // Modal styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -581,6 +543,9 @@ const styles = StyleSheet.create({
   modalContent: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    borderWidth: 3,
+    borderBottomWidth: 0,
+    borderColor: '#FF5722',
     maxHeight: '80%',
     paddingBottom: 20,
   },
@@ -590,6 +555,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   modalTitle: {
     fontSize: 20,
@@ -597,7 +563,6 @@ const styles = StyleSheet.create({
   },
   modalBody: {
     padding: 20,
-    maxHeight: 300,
   },
   inputGroup: {
     marginBottom: 20,
@@ -607,12 +572,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
   },
-  textInput: {
+  input: {
     borderWidth: 1,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
     fontWeight: '500',
+    borderColor: '#eee',
+    color: '#333',
+    backgroundColor: '#f0f0f0',
   },
   modalFooter: {
     flexDirection: 'row',
@@ -640,58 +608,6 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 16,
     fontWeight: '600',
-  },
-
-  // Order styles
-  orderItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  orderInfo: {
-    flex: 1,
-  },
-  orderTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  orderDate: {
-    fontSize: 13,
-    opacity: 0.7,
-  },
-  orderStatus: {
-    alignItems: 'flex-end',
-  },
-  orderPrice: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  moreButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  moreButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: 0.3,
+    color: '#fff',
   },
 });

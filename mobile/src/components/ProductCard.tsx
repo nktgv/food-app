@@ -39,14 +39,14 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
   const getGradientColors = (): [string, string] => {
     const tag = product.tags?.[0]?.toLowerCase() || 'food';
     const gradients: { [key: string]: [string, string] } = {
-      pizza: [colors.productRed, colors.productRedLight],
-      burger: [colors.warning, colors.warningLight],
-      sushi: [colors.productBlue, colors.productBlueLight],
-      pasta: [colors.primaryLight, colors.primary],
-      salad: [colors.accent, colors.accentLight],
-      dessert: [colors.productPurple, colors.productPurpleLight],
-      drink: [colors.productTeal, colors.productTealLight],
-      food: [colors.primary, colors.primaryLight],
+      pizza: ['#FF8C42', '#FFB366'], // Оранжевые цвета логотипа
+      burger: ['#FFB366', '#FFCC80'], // Светло-оранжевые
+      sushi: ['#26A69A', '#4DB6AC'], // Бирюзовый
+      pasta: ['#FF8C42', '#FFB366'], // Основные оранжевые
+      salad: ['#4CAF50', '#66BB6A'], // Зеленый
+      dessert: ['#AB47BC', '#BA68C8'], // Фиолетовый
+      drink: ['#26A69A', '#4DB6AC'], // Бирюзовый
+      food: ['#FF8C42', '#FFB366'], // Основные оранжевые
     };
     
     return gradients[tag] || gradients.food;

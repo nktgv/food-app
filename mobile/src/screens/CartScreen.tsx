@@ -148,33 +148,15 @@ export default function CartScreen({ navigation }: CartScreenProps) {
       
       <View style={styles.footer}>
         <View style={styles.summary}>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: theme.colors.textSecondary }]}>Подытог:</Text>
-            <Text style={[styles.summaryValue, { color: theme.colors.textPrimary }]}>
-              {state.subtotal} {state.currency}
-            </Text>
-          </View>
-          
-          <View style={[styles.summaryRow, styles.totalRow]}>
-            <Text style={[styles.totalLabel, { color: theme.colors.textPrimary }]}>Итого:</Text>
-            <Text style={[styles.totalValue, { color: theme.colors.primary }]}>
-              {state.subtotal} {state.currency}
-            </Text>
-          </View>
+          <Text style={[styles.summaryText, { color: theme.colors.textSecondary }]}>Итого:</Text>
+          <Text style={[styles.summaryTotal, { color: theme.colors.textPrimary }]}>{state.subtotal} {state.currency}</Text>
         </View>
-
+        
         <TouchableOpacity 
-          style={styles.checkoutButton}
-          onPress={handleCheckout}
-          activeOpacity={0.8}
+          style={[styles.checkoutButton, { backgroundColor: theme.colors.primary }]}
+          onPress={() => navigation.navigate('Checkout')}
         >
-          <LinearGradient
-            colors={[theme.colors.primary, theme.colors.primaryLight]}
-            style={styles.checkoutButtonGradient}
-          >
-            <Ionicons name="card-outline" size={20} color="#fff" />
-            <Text style={styles.checkoutButtonText}>Оформить заказ</Text>
-          </LinearGradient>
+          <Text style={[styles.checkoutText, { color: theme.colors.surface }]}>Оформить заказ</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -330,8 +312,18 @@ const styles = StyleSheet.create({
     color: '#FF5722',
   },
   checkoutButton: {
+    backgroundColor: '#FF8C42', // Основной оранжевый цвет логотипа
     borderRadius: 12,
-    overflow: 'hidden',
+    alignItems: 'center',
+    marginTop: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   checkoutButtonGradient: {
     flexDirection: 'row',
@@ -377,5 +369,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  summaryText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#666',
+  },
+  summaryTotal: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF5722',
+  },
+  checkoutText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    textAlign: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
   },
 });
