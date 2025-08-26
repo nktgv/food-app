@@ -3,6 +3,9 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions } from 'rea
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Placeholder from '../assets/images/placeholder';
+import { colors } from '../theme/colors';
+import { typography } from '../theme/typography';
+import { useTheme } from '../theme/ThemeProvider';
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 48) / 2; // 2 колонки с отступами
@@ -22,6 +25,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onPress, onAddToCart }: ProductCardProps) {
+  const theme = useTheme();
   const getImageSource = () => {
     // Если есть медиа, используем первое изображение
     if (product.media && product.media.length > 0) {
@@ -35,21 +39,21 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
   const getGradientColors = (): [string, string] => {
     const tag = product.tags?.[0]?.toLowerCase() || 'food';
     const gradients: { [key: string]: [string, string] } = {
-      pizza: ['#FF6B6B', '#FF8E8E'],
-      burger: ['#FFA726', '#FFB74D'],
-      sushi: ['#4FC3F7', '#81D4FA'],
-      pasta: ['#FF7043', '#FF8A65'],
-      salad: ['#66BB6A', '#81C784'],
-      dessert: ['#AB47BC', '#BA68C8'],
-      drink: ['#26A69A', '#4DB6AC'],
-      food: ['#FF5722', '#FF7043'],
+      pizza: [colors.productRed, colors.productRedLight],
+      burger: [colors.warning, colors.warningLight],
+      sushi: [colors.productBlue, colors.productBlueLight],
+      pasta: [colors.primaryLight, colors.primary],
+      salad: [colors.accent, colors.accentLight],
+      dessert: [colors.productPurple, colors.productPurpleLight],
+      drink: [colors.productTeal, colors.productTealLight],
+      food: [colors.primary, colors.primaryLight],
     };
     
     return gradients[tag] || gradients.food;
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={[styles.card, { backgroundColor: theme.colors.surface, shadowColor: theme.colors.gray900 }]} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.imageContainer}>
         {getImageSource() ? (
           <Image source={getImageSource()!} style={styles.image} resizeMode="cover" />
@@ -75,10 +79,10 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
       </View>
       
       <View style={styles.content}>
-        <Text style={styles.name} numberOfLines={2}>
+        <Text style={[styles.name, { color: theme.colors.textPrimary }]} numberOfLines={2}>
           {product.name}
         </Text>
-        <Text style={styles.description} numberOfLines={2}>
+        <Text style={[styles.description, { color: theme.colors.textSecondary }]} numberOfLines={2}>
           {product.description}
         </Text>
         
@@ -93,8 +97,8 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
-            <Ionicons name="add" size={16} color="#fff" />
-            <Text style={styles.addButtonText}>
+            <Ionicons name="add" size={16} color={theme.colors.surface} />
+            <Text style={[styles.addButtonText, { color: theme.colors.surface }]}>
               {product.base_price} {product.currency}
             </Text>
           </LinearGradient>
@@ -107,17 +111,15 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
 const styles = StyleSheet.create({
   card: {
     width: cardWidth,
-    backgroundColor: '#fff',
     borderRadius: 16,
     marginBottom: 16,
-    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   imageContainer: {
     position: 'relative',
@@ -148,9 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   price: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FF5722',
+    color: colors.primary,
   },
   tagContainer: {
     position: 'absolute',
@@ -162,9 +162,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   tag: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
+    color: colors.surface,
     textTransform: 'uppercase',
   },
   content: {
@@ -172,15 +170,14 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#333',
+    fontWeight: '600',
     marginBottom: 4,
     lineHeight: 20,
   },
   description: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 18,
+    fontSize: 13,
+    lineHeight: 16,
+    opacity: 0.8,
   },
   addButton: {
     marginTop: 12,
@@ -195,9 +192,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   addButtonText: {
+    marginLeft: 4,
     fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
-    marginLeft: 4,
   },
 });

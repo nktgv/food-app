@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCart, CartItem } from '../context/CartContext';
+import { useTheme } from '../theme/ThemeProvider';
 
 interface CartScreenProps {
   navigation: any;
@@ -19,6 +20,7 @@ interface CartScreenProps {
 
 export default function CartScreen({ navigation }: CartScreenProps) {
   const { state, removeItem, updateQuantity } = useCart();
+  const theme = useTheme();
 
   const handleCheckout = () => {
     if (state.items.length === 0) {
@@ -101,12 +103,12 @@ export default function CartScreen({ navigation }: CartScreenProps) {
 
   if (state.items.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.surface} />
         <View style={styles.emptyContainer}>
-          <Ionicons name="cart-outline" size={80} color="#ccc" />
-          <Text style={styles.emptyTitle}>Корзина пуста</Text>
-          <Text style={styles.emptyText}>
+          <Ionicons name="cart-outline" size={80} color={theme.colors.gray400} />
+          <Text style={[styles.emptyTitle, { color: theme.colors.textPrimary }]}>Корзина пуста</Text>
+          <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
             Добавьте товары из меню, чтобы сделать заказ
           </Text>
           <TouchableOpacity 
@@ -114,7 +116,7 @@ export default function CartScreen({ navigation }: CartScreenProps) {
             onPress={() => navigation.navigate('Catalog')}
           >
             <LinearGradient
-              colors={['#FF5722', '#FF7043']}
+              colors={[theme.colors.primary, theme.colors.primaryLight]}
               style={styles.browseButtonGradient}
             >
               <Text style={styles.browseButtonText}>Перейти в меню</Text>
@@ -126,12 +128,12 @@ export default function CartScreen({ navigation }: CartScreenProps) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.surface} />
       
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>🛒 Корзина</Text>
-        <Text style={styles.headerSubtitle}>
+        <Text style={[styles.headerTitle, { color: theme.colors.textPrimary }]}>🛒 Корзина</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
           {state.totalItems} товар(ов) на сумму {state.subtotal} {state.currency}
         </Text>
       </View>
@@ -147,15 +149,15 @@ export default function CartScreen({ navigation }: CartScreenProps) {
       <View style={styles.footer}>
         <View style={styles.summary}>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Подытог:</Text>
-            <Text style={styles.summaryValue}>
+            <Text style={[styles.summaryLabel, { color: theme.colors.textSecondary }]}>Подытог:</Text>
+            <Text style={[styles.summaryValue, { color: theme.colors.textPrimary }]}>
               {state.subtotal} {state.currency}
             </Text>
           </View>
           
           <View style={[styles.summaryRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Итого:</Text>
-            <Text style={styles.totalValue}>
+            <Text style={[styles.totalLabel, { color: theme.colors.textPrimary }]}>Итого:</Text>
+            <Text style={[styles.totalValue, { color: theme.colors.primary }]}>
               {state.subtotal} {state.currency}
             </Text>
           </View>
@@ -167,7 +169,7 @@ export default function CartScreen({ navigation }: CartScreenProps) {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={['#FF5722', '#FF7043']}
+            colors={[theme.colors.primary, theme.colors.primaryLight]}
             style={styles.checkoutButtonGradient}
           >
             <Ionicons name="card-outline" size={20} color="#fff" />
