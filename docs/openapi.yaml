@@ -1,0 +1,73 @@
+openapi: 3.1.0
+info:
+  title: FoodApp API
+  version: 0.1.0
+  description: |
+    API specification for FoodApp backend. Draft generated automatically.
+servers:
+  - url: http://localhost:8080/api
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+  /products:
+    get:
+      summary: List products
+      responses:
+        "200":
+          description: Product list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+  /products/{id}:
+    get:
+      summary: Get product by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        "404":
+          description: Not found
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        media:
+          type: array
+          items:
+            type: string
+        base_price:
+          type: number
+          format: float
+        currency:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        allergens:
+          type: array
+          items:
+            type: string

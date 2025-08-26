@@ -8,6 +8,9 @@ COPY go.mod go.sum ./
 # Скачиваем зависимости
 RUN go mod download
 
+# --- install goose ---
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
 # Копируем исходный код
 COPY . .
 
@@ -21,8 +24,12 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
 
-# Копируем бинарный файл из builder
+# Копируем бинарный файл и goose из builder
 COPY --from=builder /app/foodapp-backend .
+COPY --from=builder /go/bin/goose /usr/local/bin/goose
+
+# Копируем миграции
+COPY migrations ./migrations
 
 # Открываем порт
 EXPOSE 8080
