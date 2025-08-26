@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  PanGestureHandler,
-  State,
   Animated,
   Image,
   Alert
@@ -15,6 +13,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../api/client';
+import { useTheme } from '../theme/ThemeProvider';
 import { useCart } from '../context/CartContext';
 import Placeholder from '../assets/images/placeholder';
 
@@ -29,6 +28,7 @@ interface ProductModalProps {
 
 export default function ProductModal({ product, visible, onClose }: ProductModalProps) {
   const { addItem, getItemQuantity } = useCart();
+  const theme = useTheme();
   const [quantity, setQuantity] = useState(1);
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const opacity = useRef(new Animated.Value(0)).current;
@@ -79,21 +79,9 @@ export default function ProductModal({ product, visible, onClose }: ProductModal
     }
   };
 
-  const getGradientColors = (): [string, string] => {
+    const getGradientColors = (): [string, string] => {
     const tag = product?.tags?.[0]?.toLowerCase() || 'food';
-    const gradients: { [key: string]: [string, string] } = {
-      pizza: ['#FF6B6B', '#FF8E8E'],
-      burger: ['#FFA726', '#FFB74D'],
-      sushi: ['#4FC3F7', '#81D4FA'],
-      pasta: ['#FF7043', '#FF8A65'],
-      salad: ['#66BB6A', '#81C784'],
-      dessert: ['#AB47BC', '#BA68C8'],
-      drink: ['#26A69A', '#4DB6AC'],
-      coffee: ['#8D6E63', '#A1887F'],
-      food: ['#FF5722', '#FF7043'],
-    };
-    
-    return gradients[tag] || gradients.food;
+    return theme.colors.gradients[tag] || theme.colors.gradients.food;
   };
 
   const currentQuantity = product ? getItemQuantity(product.id) : 0;
@@ -118,13 +106,14 @@ export default function ProductModal({ product, visible, onClose }: ProductModal
           style={[
             styles.modalContainer,
             {
+              backgroundColor: theme.colors.surface,
               transform: [{ translateY }],
             },
           ]}
         >
           {/* Handle bar */}
-          <View style={styles.handleBar}>
-            <View style={styles.handle} />
+          <View style={[styles.handleBar, { backgroundColor: theme.colors.surface }]}>
+            <View style={[styles.handle, { backgroundColor: theme.colors.gray300 }]} />
           </View>
 
           {/* Product Image */}
@@ -147,52 +136,48 @@ export default function ProductModal({ product, visible, onClose }: ProductModal
             </TouchableOpacity>
 
             {/* Price */}
-            <View style={styles.priceContainer}>
-              <Text style={styles.price}>
+            <View style={[styles.priceContainer, { backgroundColor: 'rgba(255, 255, 255, 0.95)' }]}>
+              <Text style={[styles.price, { color: theme.colors.primary }]}>
                 {product.base_price} {product.currency}
               </Text>
             </View>
           </View>
 
           {/* Content */}
-          <View style={styles.content}>
-            <Text style={styles.name}>{product.name}</Text>
-            <Text style={styles.description}>{product.description}</Text>
+          <View style={[styles.content, { backgroundColor: theme.colors.surface }]}>
+            <Text style={[styles.name, { color: theme.colors.textPrimary }]}>{product.name}</Text>
+            <Text style={[styles.description, { color: theme.colors.textSecondary }]}>{product.description}</Text>
             
             {/* Tags */}
             {product.tags && product.tags.length > 0 && (
               <View style={styles.tagsContainer}>
                 {product.tags.map((tag, index) => (
-                  <View key={index} style={styles.tag}>
-                    <Text style={styles.tagText}>{tag}</Text>
+                  <View key={index} style={[styles.tag, { backgroundColor: theme.colors.gray100 }]}>
+                    <Text style={[styles.tagText, { color: theme.colors.textSecondary }]}>{tag}</Text>
                   </View>
                 ))}
               </View>
             )}
 
             {/* Quantity Selector */}
-            <View style={styles.quantityContainer}>
-              <Text style={styles.quantityLabel}>Количество:</Text>
+            <View style={[styles.quantityContainer, { backgroundColor: theme.colors.gray100 }]}>
+              <Text style={[styles.quantityLabel, { color: theme.colors.textPrimary }]}>Количество:</Text>
               <View style={styles.quantitySelector}>
                 <TouchableOpacity
-                  style={[styles.quantityButton, quantity <= 1 && styles.quantityButtonDisabled]}
+                  style={[styles.quantityButton, { borderColor: quantity <= 1 ? '#ccc' : theme.colors.primary }, quantity <= 1 && styles.quantityButtonDisabled]}
                   onPress={() => setQuantity(Math.max(1, quantity - 1))}
                   disabled={quantity <= 1}
                 >
-                  <Ionicons 
-                    name="remove" 
-                    size={20} 
-                    color={quantity <= 1 ? '#ccc' : '#FF5722'} 
-                  />
+                  <Ionicons name="remove" size={20} color={quantity <= 1 ? '#ccc' : theme.colors.primary} />
                 </TouchableOpacity>
                 
-                <Text style={styles.quantityText}>{quantity}</Text>
+                <Text style={[styles.quantityText, { color: theme.colors.textPrimary }]}>{quantity}</Text>
                 
                 <TouchableOpacity
-                  style={styles.quantityButton}
+                  style={[styles.quantityButton, { borderColor: theme.colors.primary }]}
                   onPress={() => setQuantity(quantity + 1)}
                 >
-                  <Ionicons name="add" size={20} color="#FF5722" />
+                  <Ionicons name="add" size={20} color={theme.colors.primary} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -200,8 +185,8 @@ export default function ProductModal({ product, visible, onClose }: ProductModal
             {/* Current cart quantity */}
             {currentQuantity > 0 && (
               <View style={styles.cartInfo}>
-                <Ionicons name="cart-outline" size={16} color="#666" />
-                <Text style={styles.cartInfoText}>
+                <Ionicons name="cart-outline" size={16} color={theme.colors.textSecondary} />
+                <Text style={[styles.cartInfoText, { color: theme.colors.textSecondary }]}>
                   В корзине: {currentQuantity} шт.
                 </Text>
               </View>
@@ -210,11 +195,11 @@ export default function ProductModal({ product, visible, onClose }: ProductModal
             {/* Variants */}
             {product.variants && product.variants.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Размеры</Text>
+                <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Размеры</Text>
                 {product.variants.map(variant => (
-                  <View key={variant.id} style={styles.variantItem}>
-                    <Text style={styles.variantName}>{variant.name}</Text>
-                    <Text style={styles.variantPrice}>
+                  <View key={variant.id} style={[styles.variantItem, { borderBottomColor: theme.colors.divider }]}>
+                    <Text style={[styles.variantName, { color: theme.colors.textPrimary }]}>{variant.name}</Text>
+                    <Text style={[styles.variantPrice, { color: theme.colors.primary }]}>
                       {variant.price_delta > 0 ? '+' : ''}{variant.price_delta} {product.currency}
                     </Text>
                   </View>
@@ -225,11 +210,11 @@ export default function ProductModal({ product, visible, onClose }: ProductModal
             {/* Allergens */}
             {product.allergens && product.allergens.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Аллергены</Text>
+                <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Аллергены</Text>
                 <View style={styles.allergensContainer}>
                   {product.allergens.map((allergen, index) => (
-                    <View key={index} style={styles.allergenTag}>
-                      <Text style={styles.allergenText}>{allergen}</Text>
+                    <View key={index} style={[styles.allergenTag, { backgroundColor: '#FFEBEE' }]}>
+                      <Text style={[styles.allergenText, { color: '#D32F2F' }]}>{allergen}</Text>
                     </View>
                   ))}
                 </View>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../theme/ThemeProvider';
 import { useCart } from '../context/CartContext';
 
 interface CartIconProps {
@@ -12,6 +13,7 @@ interface CartIconProps {
 export default function CartIcon({ focused, color, size }: CartIconProps) {
   const { state } = useCart();
   const hasItems = state.totalItems > 0;
+  const theme = useTheme();
 
   return (
     <View style={styles.container}>
@@ -21,8 +23,8 @@ export default function CartIcon({ focused, color, size }: CartIconProps) {
         color={color} 
       />
       {hasItems && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>
+        <View style={[styles.badge, { backgroundColor: theme.colors.primary }] }>
+          <Text style={[styles.badgeText, { color: theme.colors.surface }]}>
             {state.totalItems > 99 ? '99+' : state.totalItems}
           </Text>
         </View>
@@ -39,7 +41,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: '#FF5722',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -48,7 +49,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
   },

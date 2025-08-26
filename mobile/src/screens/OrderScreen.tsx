@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, SafeAreaView, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, SafeAreaView, StyleSheet, StatusBar } from 'react-native';
+import { useTheme } from '../theme/ThemeProvider';
 import { RouteProp } from '@react-navigation/native';
 import { CatalogStackParamList } from './CatalogWrapper';
 
@@ -30,26 +31,27 @@ const getStatusText = (status: OrderStatus): string => {
 	}
 };
 
-const getStatusColor = (status: OrderStatus): string => {
+const getStatusColor = (status: OrderStatus, theme: any): string => {
 	switch (status) {
 		case 'NEW':
 		case 'KITCHEN_CONFIRMED':
-			return '#007AFF';
+			return theme.colors.primary;
 		case 'IN_PREPARATION':
-			return '#FF9500';
+			return theme.colors.warning;
 		case 'READY_FOR_PICKUP':
 		case 'OUT_FOR_DELIVERY':
-			return '#28a745';
+			return theme.colors.success;
 		case 'DELIVERED':
-			return '#6c757d';
+			return theme.colors.textSecondary;
 		default:
-			return '#666';
+			return theme.colors.textSecondary;
 	}
 };
 
 export default function OrderScreen({ route }: OrderScreenProps) {
 	const { id } = route.params;
 	const [status, setStatus] = useState<OrderStatus>('NEW');
+  const theme = useTheme();
 
 	useEffect(() => {
 		const t = setInterval(() => {
@@ -76,28 +78,29 @@ export default function OrderScreen({ route }: OrderScreenProps) {
 	}, []);
 
 	return (
-		<SafeAreaView style={styles.container}>
+		<SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+			<StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.surface} />
 			<View style={styles.content}>
-				<Text style={styles.orderId}>Заказ #{id}</Text>
+				<Text style={[styles.orderId, { color: theme.colors.textPrimary }]}>Заказ #{id}</Text>
 				
 				<View style={styles.statusContainer}>
-					<Text style={styles.statusLabel}>Статус:</Text>
-					<Text style={[styles.statusText, { color: getStatusColor(status) }]}>
+					<Text style={[styles.statusLabel, { color: theme.colors.textSecondary }]}>Статус:</Text>
+					<Text style={[styles.statusText, { color: getStatusColor(status, theme) }]}>
 						{getStatusText(status)}
 					</Text>
 				</View>
 
 				{status === 'NEW' && (
 					<View style={styles.loadingContainer}>
-						<ActivityIndicator size="large" color="#007AFF" />
-						<Text style={styles.loadingText}>Ожидание подтверждения кухни...</Text>
+						<ActivityIndicator size="large" color={theme.colors.primary} />
+						<Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>Ожидание подтверждения кухни...</Text>
 					</View>
 				)}
 
 				{status === 'DELIVERED' && (
 					<View style={styles.completedContainer}>
 						<Text style={styles.completedText}>🎉</Text>
-						<Text style={styles.completedMessage}>
+						<Text style={[styles.completedMessage, { color: theme.colors.success }]}>
 							Заказ успешно доставлен!
 						</Text>
 					</View>
@@ -110,7 +113,6 @@ export default function OrderScreen({ route }: OrderScreenProps) {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: '#fff',
 	},
 	content: {
 		flex: 1,
@@ -122,7 +124,6 @@ const styles = StyleSheet.create({
 		fontSize: 24,
 		fontWeight: '700',
 		marginBottom: 20,
-		color: '#333',
 	},
 	statusContainer: {
 		alignItems: 'center',
@@ -130,7 +131,6 @@ const styles = StyleSheet.create({
 	},
 	statusLabel: {
 		fontSize: 16,
-		color: '#666',
 		marginBottom: 8,
 	},
 	statusText: {
@@ -143,7 +143,6 @@ const styles = StyleSheet.create({
 	loadingText: {
 		marginTop: 16,
 		fontSize: 16,
-		color: '#666',
 		textAlign: 'center',
 	},
 	completedContainer: {
@@ -155,7 +154,6 @@ const styles = StyleSheet.create({
 	},
 	completedMessage: {
 		fontSize: 18,
-		color: '#28a745',
 		fontWeight: '600',
 		textAlign: 'center',
 	},

@@ -97,40 +97,18 @@ type Modifier struct {
 	IsDefault  bool    `json:"is_default,omitempty"`
 }
 
-var demoProduct = Product{
-	ID:          "p_123",
-	Name:        "Маргарита",
-	Description: "Классическая пицца",
-	Media:       []string{"https://cdn/.../p_123.webp"},
-	BasePrice:   8.5,
-	Currency:    "EUR",
-	Variants: []Variant{
-		{ID: "v_small", Name: "25 см", PriceDelta: 0},
-		{ID: "v_large", Name: "35 см", PriceDelta: 4.0},
-	},
-	Modifiers: []ModGroup{
-		{ID: "mg_cheese", Name: "Сыры", MinSelect: 0, MaxSelect: 3, Required: false, Modifiers: []Modifier{
-			{ID: "m_mozz", Name: "Моцарелла", PriceDelta: 1.0, IsDefault: true},
-			{ID: "m_parm", Name: "Пармезан", PriceDelta: 1.5},
-		}},
-	},
-	Allergens: []string{"gluten", "milk"},
-	Tags:      []string{"vegetarian"},
-}
+// Demo product removed - using empty products list
 
 func handleCatalog(c *gin.Context) {
 	c.JSON(200, gin.H{"categories": []gin.H{{"id": "cat_pizza", "name": "Пицца"}}})
 }
 
 func handleProducts(c *gin.Context) {
-	c.JSON(200, []Product{demoProduct})
+	c.JSON(200, []Product{})
 }
 
 func handleProductByID(c *gin.Context) {
-	if c.Param("id") == demoProduct.ID {
-		c.JSON(200, demoProduct)
-		return
-	}
+	// No products available since demo product was removed
 	c.JSON(404, gin.H{"error": "not_found"})
 }
 

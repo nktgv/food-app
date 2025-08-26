@@ -19,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { api, Product } from '../api/client';
 import { CatalogStackParamList } from './CatalogWrapper';
 import Placeholder from '../assets/images/placeholder';
+import { useTheme } from '../theme/ThemeProvider';
 
 type ProductScreenNavigationProp = NativeStackNavigationProp<CatalogStackParamList, 'Product'>;
 type ProductScreenRouteProp = RouteProp<CatalogStackParamList, 'Product'>;
@@ -32,6 +33,7 @@ type OrderStatus = 'NEW' | 'KITCHEN_CONFIRMED' | 'IN_PREPARATION' | 'READY_FOR_P
 
 export default function ProductScreen({ route, navigation }: ProductScreenProps) {
   const { id } = route.params;
+  const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,28 +64,16 @@ export default function ProductScreen({ route, navigation }: ProductScreenProps)
 
   const getGradientColors = (): [string, string] => {
     const tag = product?.tags?.[0]?.toLowerCase() || 'food';
-    const gradients: { [key: string]: [string, string] } = {
-      pizza: ['#FF6B6B', '#FF8E8E'],
-      burger: ['#FFA726', '#FFB74D'],
-      sushi: ['#4FC3F7', '#81D4FA'],
-      pasta: ['#FF7043', '#FF8A65'],
-      salad: ['#66BB6A', '#81C784'],
-      dessert: ['#AB47BC', '#BA68C8'],
-      drink: ['#26A69A', '#4DB6AC'],
-      coffee: ['#8D6E63', '#A1887F'],
-      food: ['#FF5722', '#FF7043'],
-    };
-
-    return gradients[tag] || gradients.food;
+    return theme.colors.gradients[tag] || theme.colors.gradients.food;
   };
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#FF5722" />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.surface} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FF5722" />
-          <Text style={styles.loadingText}>Загружаем товар...</Text>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>Загружаем товар...</Text>
         </View>
       </SafeAreaView>
     );
@@ -91,12 +81,12 @@ export default function ProductScreen({ route, navigation }: ProductScreenProps)
 
   if (error || !product) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#FF5722" />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.surface} />
         <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={64} color="#FF5722" />
-          <Text style={styles.errorTitle}>Ошибка загрузки</Text>
-          <Text style={styles.errorText}>
+          <Ionicons name="alert-circle-outline" size={64} color={theme.colors.primary} />
+          <Text style={[styles.errorTitle, { color: theme.colors.textPrimary }]}>Ошибка загрузки</Text>
+          <Text style={[styles.errorText, { color: theme.colors.textSecondary }]}>
             {error || 'Товар не найден'}
           </Text>
           <TouchableOpacity
@@ -111,8 +101,8 @@ export default function ProductScreen({ route, navigation }: ProductScreenProps)
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#FF5722" />
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.surface} />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header с изображением */}
@@ -139,7 +129,7 @@ export default function ProductScreen({ route, navigation }: ProductScreenProps)
 
           {/* Цена */}
           <View style={styles.priceContainer}>
-            <Text style={styles.price}>
+            <Text style={[styles.price, { color: theme.colors.primary }]}>
               {product.base_price} {product.currency}
             </Text>
           </View>
@@ -147,15 +137,15 @@ export default function ProductScreen({ route, navigation }: ProductScreenProps)
 
         {/* Контент */}
         <View style={styles.content}>
-          <Text style={styles.name}>{product.name}</Text>
-          <Text style={styles.description}>{product.description}</Text>
+          <Text style={[styles.name, { color: theme.colors.textPrimary }]}>{product.name}</Text>
+          <Text style={[styles.description, { color: theme.colors.textSecondary }]}>{product.description}</Text>
 
           {/* Теги */}
           {product.tags && product.tags.length > 0 && (
             <View style={styles.tagsContainer}>
               {product.tags.map((tag, index) => (
                 <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
+                  <Text style={[styles.tagText, { color: theme.colors.textSecondary }]}>{tag}</Text>
                 </View>
               ))}
             </View>
@@ -164,11 +154,11 @@ export default function ProductScreen({ route, navigation }: ProductScreenProps)
           {/* Варианты */}
           {product.variants && product.variants.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Размеры</Text>
+              <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Размеры</Text>
               {product.variants.map(variant => (
                 <View key={variant.id} style={styles.variantItem}>
-                  <Text style={styles.variantName}>{variant.name}</Text>
-                  <Text style={styles.variantPrice}>
+                  <Text style={[styles.variantName, { color: theme.colors.textPrimary }]}>{variant.name}</Text>
+                  <Text style={[styles.variantPrice, { color: theme.colors.primary }]}>
                     {variant.price_delta > 0 ? '+' : ''}{variant.price_delta} {product.currency}
                   </Text>
                 </View>
@@ -179,11 +169,11 @@ export default function ProductScreen({ route, navigation }: ProductScreenProps)
           {/* Аллергены */}
           {product.allergens && product.allergens.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Аллергены</Text>
+              <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Аллергены</Text>
               <View style={styles.allergensContainer}>
                 {product.allergens.map((allergen, index) => (
                   <View key={index} style={styles.allergenTag}>
-                    <Text style={styles.allergenText}>{allergen}</Text>
+                    <Text style={[styles.allergenText, { color: '#D32F2F' }]}>{allergen}</Text>
                   </View>
                 ))}
               </View>

@@ -4,6 +4,7 @@ import CatalogScreen from './CatalogScreen';
 import ProductScreen from './ProductScreen';
 import CheckoutScreen from './CheckoutScreen';
 import OrderScreen from './OrderScreen';
+import { useTheme } from '../theme/ThemeProvider';
 
 export type CatalogStackParamList = {
   CatalogMain: undefined;
@@ -15,12 +16,17 @@ export type CatalogStackParamList = {
 const CatalogStack = createNativeStackNavigator<CatalogStackParamList>();
 
 export default function CatalogWrapper() {
+  const theme = useTheme();
   return (
-    <CatalogStack.Navigator>
+    <CatalogStack.Navigator screenOptions={{
+      contentStyle: { backgroundColor: theme.colors.background },
+      headerStyle: { backgroundColor: theme.colors.surface },
+      headerTintColor: theme.colors.textPrimary,
+    }}>
       <CatalogStack.Screen 
         name="CatalogMain" 
         component={CatalogScreen} 
-        options={{ title: 'Каталог' }} 
+        options={{ title: 'FAST FOOD FAMILY' }} 
       />
       <CatalogStack.Screen 
         name="Product" 

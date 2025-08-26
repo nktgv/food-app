@@ -1,10 +1,13 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { colors } from '../theme/colors';
+import { typography } from '../theme/typography';
+import { useTheme } from '../theme/ThemeProvider';
 
 interface Category {
   id: string;
   name: string;
-  icon: string;
+  icon: string; // not used in this tab design
 }
 
 interface CategoryFilterProps {
@@ -13,47 +16,41 @@ interface CategoryFilterProps {
   onSelectCategory: (categoryId: string | null) => void;
 }
 
-const categoryIcons: { [key: string]: string } = {
-  all: '🍽️',
-  pizza: '🍕',
-  burger: '🍔',
-  sushi: '🍣',
-  pasta: '🍝',
-  salad: '🥗',
-  dessert: '🍰',
-  drink: '🥤',
-  coffee: '☕',
-  breakfast: '🥐',
-  lunch: '🍱',
-  dinner: '🍽️',
-};
-
-export default function CategoryFilter({ 
-  categories, 
-  selectedCategory, 
-  onSelectCategory 
+export default function CategoryFilter({
+  categories,
+  selectedCategory,
+  onSelectCategory
 }: CategoryFilterProps) {
+  const theme = useTheme();
+  
   return (
-    <View style={styles.container}>
-      <ScrollView 
-        horizontal 
+    <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         <TouchableOpacity
           style={[
             styles.categoryButton,
-            selectedCategory === null && styles.selectedCategory
+            selectedCategory === null && [
+              styles.categoryButtonSelected,
+              { backgroundColor: theme.colors.primary + '15' }
+            ]
           ]}
           onPress={() => onSelectCategory(null)}
         >
-          <Text style={styles.categoryIcon}>🍽️</Text>
           <Text style={[
             styles.categoryText,
-            selectedCategory === null && styles.selectedCategoryText
+            { color: theme.colors.textSecondary },
+            selectedCategory === null && [
+              styles.categoryTextSelected,
+              { color: theme.colors.primary }
+            ]
           ]}>
             Все
           </Text>
+
         </TouchableOpacity>
         
         {categories.map((category) => (
@@ -61,19 +58,24 @@ export default function CategoryFilter({
             key={category.id}
             style={[
               styles.categoryButton,
-              selectedCategory === category.id && styles.selectedCategory
+              selectedCategory === category.id && [
+                styles.categoryButtonSelected,
+                { backgroundColor: theme.colors.primary + '15' }
+              ]
             ]}
             onPress={() => onSelectCategory(category.id)}
           >
-            <Text style={styles.categoryIcon}>
-              {categoryIcons[category.name.toLowerCase()] || '🍽️'}
-            </Text>
             <Text style={[
               styles.categoryText,
-              selectedCategory === category.id && styles.selectedCategoryText
+              { color: theme.colors.textSecondary },
+              selectedCategory === category.id && [
+                styles.categoryTextSelected,
+                { color: theme.colors.primary }
+              ]
             ]}>
               {category.name}
             </Text>
+
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -83,40 +85,43 @@ export default function CategoryFilter({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingVertical: 20,
+    paddingBottom: 24,
+    borderBottomWidth: 0,
+    elevation: 0,
+    shadowOpacity: 0,
   },
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   categoryButton: {
+    position: 'relative',
     alignItems: 'center',
-    marginRight: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: '#e9ecef',
+    marginRight: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
     minWidth: 80,
   },
-  selectedCategory: {
-    backgroundColor: '#FF5722',
-    borderColor: '#FF5722',
+  categoryButtonSelected: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
   categoryIcon: {
-    fontSize: 20,
     marginBottom: 4,
   },
   categoryText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
     textAlign: 'center',
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
-  selectedCategoryText: {
-    color: '#fff',
+  categoryTextSelected: {
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
+
 });
