@@ -31,6 +31,7 @@ export interface Product {
 	modifier_groups: ModGroup[];
 	allergens: string[];
 	tags: string[];
+	weight?: number;
 }
 
 export interface Variant {

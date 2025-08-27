@@ -26,7 +26,7 @@ export default function CatalogWrapper() {
       <CatalogStack.Screen 
         name="CatalogMain" 
         component={CatalogScreen} 
-        options={{ title: 'Fast Food Family' }} 
+        options={{ headerShown: false }} 
       />
       <CatalogStack.Screen 
         name="Product" 

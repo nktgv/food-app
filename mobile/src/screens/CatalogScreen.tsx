@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -7,9 +7,12 @@ import {
   SafeAreaView, 
   StyleSheet,
   RefreshControl,
-  StatusBar
+  StatusBar,
+  ScrollView,
+  TouchableOpacity
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { api, Product } from '../api/client';
 import { CatalogStackParamList } from './CatalogWrapper';
 import ProductCard from '../components/ProductCard';
@@ -44,7 +47,8 @@ const mockProducts: Product[] = [
     variants: [],
     modifier_groups: [],
     allergens: ['пшеница', 'молоко'],
-    tags: ['shaurma', 'баранина']
+    tags: ['shaurma', 'баранина'],
+    weight: 520
   },
   {
     id: '2',
@@ -56,7 +60,8 @@ const mockProducts: Product[] = [
     variants: [],
     modifier_groups: [],
     allergens: ['пшеница', 'молоко'],
-    tags: ['shaurma', 'курица']
+    tags: ['shaurma', 'курица'],
+    weight: 340
   },
   {
     id: '3',
@@ -68,7 +73,8 @@ const mockProducts: Product[] = [
     variants: [],
     modifier_groups: [],
     allergens: ['пшеница', 'молоко'],
-    tags: ['shaurma', 'курица']
+    tags: ['shaurma', 'курица'],
+    weight: 480
   },
   {
     id: '4',
@@ -80,7 +86,8 @@ const mockProducts: Product[] = [
     variants: [],
     modifier_groups: [],
     allergens: ['пшеница', 'молоко'],
-    tags: ['shaurma', 'курица']
+    tags: ['shaurма', 'курица'],
+    weight: 450
   },
   {
     id: '5',
@@ -92,7 +99,8 @@ const mockProducts: Product[] = [
     variants: [],
     modifier_groups: [],
     allergens: ['пшеница', 'молоко'],
-    tags: ['shaurma', 'курица']
+    tags: ['shaurма', 'курица'],
+    weight: 450
   },
   {
     id: '6',
@@ -1130,18 +1138,45 @@ const categories: Category[] = [
 ];
 
 export default function CatalogScreen({ navigation }: CatalogScreenProps) {
-  const { addItem } = useCart();
   const theme = useTheme();
+  const { addItem } = useCart();
+  
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>(''); // Изменено на string
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isCategoriesSticky, setIsCategoriesSticky] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>('');
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [categoriesHeight, setCategoriesHeight] = useState(0);
   
+  const scrollViewRef = useRef<ScrollView>(null);
+  const headerRef = useRef<View>(null);
+  const categoriesRef = useRef<View>(null);
+  const categoryPositions = useRef<{ [key: string]: number }>({});
+  const isScrollingToCategory = useRef(false);
+
   useEffect(() => {
     loadProducts();
-  }, []);
+    // Устанавливаем первую категорию по умолчанию (Шаурма)
+    if (categories.length > 0 && !selectedCategory) {
+      setSelectedCategory(categories[0].id);
+      setActiveCategory(categories[0].id);
+    }
+  }, [categories, selectedCategory]);
+
+  // Измеряем высоты хедера и категорий
+  const onHeaderLayout = (event: any) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
+
+  const onCategoriesLayout = (event: any) => {
+    const { height } = event.nativeEvent.layout;
+    setCategoriesHeight(height);
+  };
 
   const loadProducts = async () => {
     try {
@@ -1158,20 +1193,75 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
     }
   };
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-    await loadProducts();
-    setRefreshing(false);
-  };
+    
+    // Имитируем загрузку данных
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
 
   const filteredProducts = selectedCategory 
     ? products.filter(product => 
         product.tags.some(tag => tag.toLowerCase() === selectedCategory.toLowerCase())
       )
-    : products;
+    : products.filter(product => 
+        product.tags.some(tag => tag.toLowerCase() === categories[0]?.id.toLowerCase())
+      );
 
-  const handleSelectCategory = (categoryId: string | null) => {
+  const handleSelectCategory = (categoryId: string) => {
     setSelectedCategory(categoryId);
+    setActiveCategory(categoryId);
+    
+    // Прокручиваем к выбранной категории с точным отступом
+    if (categoryId && categoryPositions.current[categoryId]) {
+      isScrollingToCategory.current = true;
+      const stickyOffset = headerHeight + categoriesHeight + 2; // Хедер + категории + 2px
+      scrollViewRef.current?.scrollTo({
+        y: categoryPositions.current[categoryId] - stickyOffset,
+        animated: true,
+      });
+      
+      // Сбрасываем флаг через небольшую задержку
+      setTimeout(() => {
+        isScrollingToCategory.current = false;
+      }, 500);
+    }
+  };
+
+  const onCategoryLayout = (categoryId: string, event: any) => {
+    const { y } = event.nativeEvent.layout;
+    categoryPositions.current[categoryId] = y;
+  };
+
+  const handleScroll = (event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    
+    // Категории закрепляются сразу после хедера с минимальным зазором
+    if (offsetY > headerHeight + 2) {
+      setIsCategoriesSticky(true);
+    } else {
+      setIsCategoriesSticky(false);
+    }
+
+    // Автоматическое переключение активной категории при скролле
+    if (!isScrollingToCategory.current) {
+      const stickyOffset = headerHeight + categoriesHeight + 2;
+      const scrollPosition = offsetY + stickyOffset;
+      
+      // Находим активную категорию на основе позиции скролла
+      let newActiveCategory = selectedCategory;
+      for (const [categoryId, position] of Object.entries(categoryPositions.current)) {
+        if (scrollPosition >= position) {
+          newActiveCategory = categoryId;
+        }
+      }
+      
+      if (newActiveCategory !== activeCategory) {
+        setActiveCategory(newActiveCategory);
+      }
+    }
   };
 
   const handleProductPress = (product: Product) => {
@@ -1198,14 +1288,58 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <PromoBanner onPress={() => {}} />
-      <CategoryFilter
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onSelectCategory={handleSelectCategory}
-      />
+      {/* Заголовок ресторана */}
+      <View style={styles.restaurantHeader}>
+        <View style={styles.locationSection}>
+          <TouchableOpacity style={styles.locationButton}>
+            <Text style={styles.pickupText}>Самовывоз</Text>
+            <Ionicons name="chevron-down" size={16} color="#666" />
+          </TouchableOpacity>
+          <Text style={styles.restaurantAddress}>Среднерогатская, 13</Text>
+        </View>
+        <View style={styles.bonusSection}>
+          <Text style={styles.bonusText}>У вас 57 бонусов!</Text>
+        </View>
+      </View>
+      
+      {/* Баннеры с акциями */}
+      <View style={styles.promoSection}>
+        <PromoBanner onPress={() => {}} />
+      </View>
     </View>
   );
+
+  const renderCategorySection = (category: Category) => {
+    const categoryProducts = products.filter(product => 
+      product.tags.some(tag => tag.toLowerCase() === category.id.toLowerCase())
+    );
+
+    if (categoryProducts.length === 0) return null;
+
+    return (
+      <View 
+        key={category.id} 
+        style={styles.categorySection}
+        onLayout={(event) => onCategoryLayout(category.id, event)}
+      >
+        <View style={styles.categoryHeader}>
+          <Text style={styles.categoryTitle}>{category.name}</Text>
+        </View>
+        
+        <View style={styles.productsGrid}>
+          {categoryProducts.map((product) => (
+            <View key={product.id} style={styles.productWrapper}>
+              <ProductCard
+                product={product}
+                onPress={() => setSelectedProduct(product)}
+                onAddToCart={() => {}}
+              />
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
 
   if (loading) {
     return (
@@ -1220,43 +1354,66 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <StatusBar barStyle={theme.mode === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.surface} />
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
-      <FlatList
-        data={filteredProducts}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderProduct}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.listContainer}
-        ListHeaderComponent={renderHeader}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={[theme.colors.primary]}
-            tintColor={theme.colors.primary}
-          />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>😔</Text>
-            <Text style={[styles.emptyTitle, { color: theme.colors.textPrimary }]}>Ничего не найдено</Text>
-            <Text style={[styles.emptySubtitle, { color: theme.colors.textSecondary }] }>
-              Попробуйте выбрать другую категорию
-            </Text>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Закрепленные категории в шапке (показываются только при скроллинге) */}
+        {isCategoriesSticky && (
+          <View style={[styles.stickyCategories, { top: 2 }]}>
+            <CategoryFilter
+              categories={categories}
+              selectedCategory={activeCategory}
+              onSelectCategory={handleSelectCategory}
+            />
           </View>
-        }
-      />
-      
-      <ProductModal
-        product={selectedProduct}
-        visible={modalVisible}
-        onClose={handleCloseModal}
-      />
-    </SafeAreaView>
+        )}
+        
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#FF8C42']}
+              tintColor="#FF8C42"
+            />
+          }
+        >
+          {/* Заголовок ресторана и баннеры (уезжают при скроллинге) */}
+          <View style={styles.header} onLayout={onHeaderLayout}>
+            {renderHeader()}
+          </View>
+          
+          {/* Категории в основном контенте (скрываются при закреплении) */}
+          {!isCategoriesSticky && (
+            <View style={styles.categoriesSection} onLayout={onCategoriesLayout}>
+              <CategoryFilter
+                categories={categories}
+                selectedCategory={activeCategory}
+                onSelectCategory={handleSelectCategory}
+              />
+            </View>
+          )}
+          
+          {/* Рендерим секции для каждой категории */}
+          {categories.map(category => renderCategorySection(category))}
+        </ScrollView>
+        
+
+        
+        <ProductModal
+          product={selectedProduct}
+          visible={modalVisible}
+          onClose={handleCloseModal}
+        />
+      </SafeAreaView>
+    </View>
   );
 }
 
@@ -1282,8 +1439,13 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   header: {
-    backgroundColor: '#fff', // Or any other background color for the header
-    paddingBottom: 10, // Adjust as needed for spacing
+    backgroundColor: '#fff',
+    margin: 0,
+    paddingTop: 16,
+    paddingBottom: 0,
+    paddingHorizontal: 0,
+    width: '100%',
+    alignSelf: 'stretch',
   },
   emptyContainer: {
     flex: 1,
@@ -1303,5 +1465,140 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     fontSize: 14,
     textAlign: 'center',
+  },
+  sectionHeader: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2C2C2C',
+    letterSpacing: 0.5,
+  },
+  categorySection: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingTop: 0,
+    marginTop: 0,
+    backgroundColor: '#fff', // Белый фон вместо серого
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0', // Более светлая граница
+  },
+  categoryHeader: {
+    marginBottom: 8,
+    marginTop: 0,
+    paddingTop: 0,
+  },
+  categoryTitle: {
+    fontSize: 22, // Увеличен размер
+    fontWeight: 'bold',
+    color: '#2C2C2C', // Более темный цвет
+    letterSpacing: 0.5,
+  },
+  productsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  productWrapper: {
+    width: '48%', // 2 columns
+    marginBottom: 15,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  scrollContent: {
+    paddingBottom: 20,
+    paddingTop: 32,
+    marginTop: 0,
+  },
+
+  stickyHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: '#fff',
+    paddingBottom: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  scrollSpacer: {
+    height: 0, // Отступ не нужен, заголовок в контенте
+  },
+  promoSection: {
+    paddingTop: 8,
+    paddingBottom: 0,
+    backgroundColor: '#fff',
+  },
+  restaurantHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#fff',
+  },
+  locationSection: {
+    flex: 1,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  pickupText: {
+    fontSize: 14,
+    color: '#666',
+    marginRight: 5,
+    fontWeight: '500',
+  },
+  restaurantName: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#2C2C2C',
+    marginBottom: 0,
+  },
+  restaurantAddress: {
+    fontSize: 13,
+    color: '#666',
+  },
+  bonusSection: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 0,
+  },
+  bonusText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FF8C42',
+    textAlign: 'center',
+  },
+
+  categoriesSection: {
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    backgroundColor: '#fff',
+    overflow: 'hidden',
+  },
+  stickyCategories: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 50,
+    backgroundColor: '#fff',
+    margin: 0,
+    padding: 0,
+    overflow: 'hidden',
   },
 });
