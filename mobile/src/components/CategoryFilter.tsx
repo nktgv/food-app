@@ -1,19 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { useTheme } from '../theme/ThemeProvider';
 
 interface Category {
   id: string;
   name: string;
-  icon: string; // not used in this tab design
+  icon: string;
 }
 
 interface CategoryFilterProps {
   categories: Category[];
-  selectedCategory: string | null;
-  onSelectCategory: (categoryId: string | null) => void;
+  selectedCategory: string;
+  onSelectCategory: (categoryId: string) => void;
 }
 
 export default function CategoryFilter({
@@ -21,107 +18,101 @@ export default function CategoryFilter({
   selectedCategory,
   onSelectCategory
 }: CategoryFilterProps) {
-  const theme = useTheme();
-  
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <TouchableOpacity
-          style={[
-            styles.categoryButton,
-            selectedCategory === null && [
-              styles.categoryButtonSelected,
-              { backgroundColor: theme.colors.primary + '15' }
-            ]
-          ]}
-          onPress={() => onSelectCategory(null)}
+    <View style={styles.container}>
+      <View style={styles.filterBlock}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          style={styles.scrollView}
+          decelerationRate="fast"
+          snapToInterval={140}
+          snapToAlignment="start"
         >
-          <Text style={[
-            styles.categoryText,
-            { color: theme.colors.textSecondary },
-            selectedCategory === null && [
-              styles.categoryTextSelected,
-              { color: theme.colors.primary }
-            ]
-          ]}>
-            Все
-          </Text>
-
-        </TouchableOpacity>
-        
-        {categories.map((category) => (
-          <TouchableOpacity
-            key={category.id}
-            style={[
-              styles.categoryButton,
-              selectedCategory === category.id && [
-                styles.categoryButtonSelected,
-                { backgroundColor: theme.colors.primary + '15' }
-              ]
-            ]}
-            onPress={() => onSelectCategory(category.id)}
-          >
-            <Text style={[
-              styles.categoryText,
-              { color: theme.colors.textSecondary },
-              selectedCategory === category.id && [
-                styles.categoryTextSelected,
-                { color: theme.colors.primary }
-              ]
-            ]}>
-              {category.name}
-            </Text>
-
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category.id}
+              style={[
+                styles.categoryButton,
+                selectedCategory === category.id && styles.categoryButtonSelected
+              ]}
+              onPress={() => onSelectCategory(category.id)}
+            >
+              <Text 
+                style={[
+                  styles.categoryText,
+                  selectedCategory === category.id && styles.categoryTextSelected
+                ]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {category.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 20,
-    paddingBottom: 24,
-    borderBottomWidth: 0,
-    elevation: 0,
-    shadowOpacity: 0,
+    backgroundColor: '#ffffff',
+    zIndex: 9999,
+    margin: 0,
+    padding: 0,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  filterBlock: {
+    backgroundColor: '#ffffff',
+    margin: 0,
+    padding: 0,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  scrollView: {
+    height: 44,
+    margin: 0,
+    padding: 0,
+    width: '100%',
   },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+    margin: 0,
+    alignItems: 'center',
+    gap: 4,
+    width: '100%',
   },
   categoryButton: {
-    position: 'relative',
     alignItems: 'center',
-    marginRight: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 25,
-    minWidth: 80,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    margin: 0,
+    borderRadius: 20,
+    minWidth: 100,
+    height: 32,
+    backgroundColor: '#f5f5f5',
+    borderWidth: 0,
+    flexShrink: 0,
   },
   categoryButtonSelected: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  categoryIcon: {
-    marginBottom: 4,
+    backgroundColor: '#FF8C42',
+    borderWidth: 0,
+    transform: [{ scale: 1.02 }],
   },
   categoryText: {
     textAlign: 'center',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    letterSpacing: 0.3,
+    color: '#666666',
+    flexShrink: 1,
   },
   categoryTextSelected: {
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    fontWeight: '700',
+    color: '#ffffff',
   },
-
 });

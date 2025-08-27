@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, Animated } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeProvider';
@@ -13,64 +13,45 @@ interface PromoBannerProps {
 const promotions = [
   {
     id: '1',
-    title: '🎁 Регистрация',
-    subtitle: 'Cashback от 5% бонусами',
-    description: 'При регистрации в приложении',
+    title: 'БЕСПЛАТНАЯ ДОСТАВКА',
+    subtitle: 'При заказе от 1000 ₽',
     colors: ['#FF8C42', '#FFB366'] as [string, string],
-    icon: 'gift'
+    icon: 'bicycle',
+    image: '🚚'
   },
   {
     id: '2',
-    title: '⭐ У вас 1250 бонусов',
-    subtitle: 'Давайте потратим их!',
-    description: 'Используйте накопленные баллы',
-    colors: ['#8B4513', '#A0522D'] as [string, string],
-    icon: 'star'
+    title: 'СЕКРЕТНЫЕ ПРОМОКОДЫ В ТГ',
+    subtitle: 'Скидки до 50%',
+    colors: ['#FF8C42', '#FFB366'] as [string, string],
+    icon: 'paper-plane',
+    image: '📱'
   },
   {
     id: '3',
-    title: '🔥 Горячие предложения',
-    subtitle: 'Скидки до 30%',
-    description: 'На популярные позиции',
-    colors: ['#D32F2F', '#F44336'] as [string, string],
-    icon: 'flame'
+    title: 'РОЛЛЫ В ТОРТИЛЬЕ',
+    subtitle: 'от 160 ₽',
+    colors: ['#4CAF50', '#66BB6A'] as [string, string],
+    icon: 'restaurant',
+    image: '🌯'
   }
 ];
 
 export default function PromoBanner({ onPress }: PromoBannerProps) {
   const theme = useTheme();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollViewRef = useRef<ScrollView>(null);
-
-  const handleScroll = (event: any) => {
-    const contentOffset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffset / screenWidth);
-    setCurrentIndex(index);
-  };
-
-  const goToSlide = (index: number) => {
-    scrollViewRef.current?.scrollTo({
-      x: index * screenWidth,
-      animated: true,
-    });
-  };
 
   return (
     <View style={styles.container}>
       <ScrollView
-        ref={scrollViewRef}
         horizontal
-        pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
+        contentContainerStyle={styles.scrollContent}
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollViewContent}
       >
-        {promotions.map((promo, index) => (
+        {promotions.map((promo) => (
           <TouchableOpacity
             key={promo.id}
-            style={styles.slide}
+            style={styles.promoCard}
             onPress={onPress}
             activeOpacity={0.9}
           >
@@ -80,13 +61,12 @@ export default function PromoBanner({ onPress }: PromoBannerProps) {
               end={{ x: 1, y: 1 }}
               style={styles.gradient}
             >
-              <View style={styles.content}>
-                <View style={styles.textContainer}>
+              <View style={styles.cardContent}>
+                <View style={styles.textSection}>
                   <Text style={styles.title}>{promo.title}</Text>
                   <Text style={styles.subtitle}>{promo.subtitle}</Text>
-                  <Text style={styles.description}>{promo.description}</Text>
                 </View>
-                <View style={styles.iconContainer}>
+                <View style={styles.iconSection}>
                   <Ionicons name={promo.icon as any} size={32} color="#fff" />
                 </View>
               </View>
@@ -94,91 +74,70 @@ export default function PromoBanner({ onPress }: PromoBannerProps) {
           </TouchableOpacity>
         ))}
       </ScrollView>
-      
-      <View style={styles.indicators}>
-        {promotions.map((_, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.indicator,
-              currentIndex === index && styles.activeIndicator
-            ]}
-            onPress={() => goToSlide(index)}
-          />
-        ))}
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginTop: 24,
+    marginBottom: 30,
+    zIndex: 1,
   },
   scrollView: {
-    flexGrow: 0,
+    height: 100,
   },
-  scrollViewContent: {
-    alignItems: 'center',
+  scrollContent: {
+    paddingHorizontal: 16,
   },
-  slide: {
-    width: screenWidth - 32, // Account for screen padding
-    height: 120,
-    marginHorizontal: 4,
+  promoCard: {
+    width: screenWidth - 80, // Одна карточка на экран с отступами
+    height: 100,
+    marginRight: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 2,
   },
   gradient: {
     flex: 1,
-    borderRadius: 16,
-    padding: 20,
+    padding: 16,
   },
-  content: {
+  cardContent: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  textContainer: {
+  textSection: {
     flex: 1,
     marginRight: 16,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 4,
+    marginBottom: 6,
+    lineHeight: 20,
   },
   subtitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 2,
+    color: 'rgba(255, 255, 255, 0.95)',
+    lineHeight: 18,
+    fontWeight: '500',
   },
-  description: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.9)',
-  },
-  iconContainer: {
+  iconSection: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  indicators: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 16,
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#ddd',
-    marginHorizontal: 4,
-  },
-  activeIndicator: {
-    backgroundColor: '#FF8C42',
-    width: 24,
   },
 });

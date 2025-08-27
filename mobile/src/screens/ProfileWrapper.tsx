@@ -32,7 +32,7 @@ export default function ProfileWrapper() {
       <ProfileStack.Screen 
         name="ProfileMain" 
         component={ProfileScreen} 
-        options={{ title: 'Профиль' }} 
+        options={{ headerShown: false }} 
       />
       <ProfileStack.Screen 
         name="Policy" 
