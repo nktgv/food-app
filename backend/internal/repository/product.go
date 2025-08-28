@@ -25,7 +25,7 @@ func NewProductRepositoryPG(db *sqlx.DB) ProductRepository {
 
 func (r *productRepoPG) List(ctx context.Context) ([]domain.Product, error) {
 	products := []domain.Product{}
-	err := r.db.SelectContext(ctx, &products, `SELECT id, name, description, base_price, currency, tags, allergens FROM products`)
+	err := r.db.SelectContext(ctx, &products, `SELECT id, name, description, media, base_price, currency, tags, allergens FROM products`)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (r *productRepoPG) List(ctx context.Context) ([]domain.Product, error) {
 
 func (r *productRepoPG) GetByID(ctx context.Context, id string) (*domain.Product, error) {
 	var p domain.Product
-	err := r.db.GetContext(ctx, &p, `SELECT id, name, description, base_price, currency, tags, allergens FROM products WHERE id = $1`, id)
+	err := r.db.GetContext(ctx, &p, `SELECT id, name, description, media, base_price, currency, tags, allergens FROM products WHERE id = $1`, id)
 	if err != nil {
 		return nil, err
 	}
