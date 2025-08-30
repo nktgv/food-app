@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, StatusBar, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeProvider';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
 
 export default function ProfileScreen() {
   const theme = useTheme();
+  const { logout } = useAuth();
   
   // Profile state
   const [profileData, setProfileData] = useState({
@@ -92,7 +94,7 @@ export default function ProfileScreen() {
         {
           text: 'Выйти',
           style: 'destructive',
-          onPress: () => Alert.alert('Выход', 'Вы вышли из приложения'),
+          onPress: () => logout(),
         },
       ]
     );

@@ -2,11 +2,11 @@ import { colors } from "./colors";
 
 // Martian Grotesk font family - modern, clean, optimized for UI
 export const fontFamily = {
-  regular: 'MartianGrotesk-Regular',
-  medium: 'MartianGrotesk-Medium',
-  semiBold: 'MartianGrotesk-Bold',
-  bold: 'MartianGrotesk-Bold',
-  light: 'MartianGrotesk-Light',
+  regular: 'Unbounded-Regular',
+  medium: 'Unbounded-Medium',
+  semiBold: 'Unbounded-SemiBold',
+  bold: 'Unbounded-Bold',
+  light: 'Unbounded-Light',
 };
 
 export const typography = {

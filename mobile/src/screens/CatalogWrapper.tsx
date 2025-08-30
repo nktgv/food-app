@@ -4,6 +4,7 @@ import CatalogScreen from './CatalogScreen';
 import ProductScreen from './ProductScreen';
 import CheckoutScreen from './CheckoutScreen';
 import OrderScreen from './OrderScreen';
+import CartScreen from './CartScreen';
 import { useTheme } from '../theme/ThemeProvider';
 
 export type CatalogStackParamList = {
@@ -11,6 +12,7 @@ export type CatalogStackParamList = {
   Product: { id: string };
   Checkout: undefined;
   Order: { id: string };
+  Cart: undefined;
 };
 
 const CatalogStack = createNativeStackNavigator<CatalogStackParamList>();
@@ -42,6 +44,11 @@ export default function CatalogWrapper() {
         name="Order" 
         component={OrderScreen} 
         options={{ title: 'Заказ' }} 
+      />
+      <CatalogStack.Screen 
+        name="Cart" 
+        component={CartScreen} 
+        options={{ title: 'Корзина' }} 
       />
     </CatalogStack.Navigator>
   );

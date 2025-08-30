@@ -21,6 +21,7 @@ import ProductModal from '../components/ProductModal';
 import PromoBanner from '../components/PromoBanner';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../theme/ThemeProvider';
+import FloatingCartButton from '../components/FloatingCartButton';
 
 type CatalogScreenNavigationProp = NativeStackNavigationProp<CatalogStackParamList, 'CatalogMain'>;
 
@@ -1331,7 +1332,7 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
             <View key={product.id} style={styles.productWrapper}>
               <ProductCard
                 product={product}
-                onPress={() => setSelectedProduct(product)}
+                onPress={() => handleProductPress(product)}
                 onAddToCart={() => {}}
               />
             </View>
@@ -1412,6 +1413,8 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
           visible={modalVisible}
           onClose={handleCloseModal}
         />
+        
+        <FloatingCartButton />
       </SafeAreaView>
     </View>
   );

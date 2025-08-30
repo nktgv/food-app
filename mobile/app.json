@@ -7,7 +7,13 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "fonts": ["./assets/fonts/MartianGrotesk-Regular.ttf", "./assets/fonts/MartianGrotesk-Medium.ttf", "./assets/fonts/MartianGrotesk-Bold.ttf", "./assets/fonts/MartianGrotesk-Light.ttf"],
+    "fonts": [
+      "./assets/fonts/Unbounded-Regular.ttf",
+      "./assets/fonts/Unbounded-Medium.ttf",
+      "./assets/fonts/Unbounded-SemiBold.ttf",
+      "./assets/fonts/Unbounded-Bold.ttf",
+      "./assets/fonts/Unbounded-Light.ttf"
+    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
