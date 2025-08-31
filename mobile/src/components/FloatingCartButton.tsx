@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import ShoppingBagIcon from '../../assets/icons/shopping_bag.svg';
+import { ShoppingBagIcon } from './icons';
 import { useNavigation } from '@react-navigation/native';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../theme/ThemeProvider';
+import { fontFamily } from '../theme/typography';
+import { colors } from '../theme/colors';
 
 export default function FloatingCartButton() {
   const { state } = useCart();
@@ -22,12 +24,12 @@ export default function FloatingCartButton() {
   return (
     <View style={styles.container} pointerEvents="box-none">
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: theme.colors.primary }]}
+        style={[styles.button, { backgroundColor: colors.primary }]}
         onPress={handlePress}
         activeOpacity={0.8}
       >
-        <Text style={[styles.totalText]}>{state.subtotal} {state.currency}</Text>
-        <ShoppingBagIcon width={24} height={24} stroke={theme.colors.surface} />
+        <Text style={styles.totalText}>{state.subtotal} {state.currency}</Text>
+        <ShoppingBagIcon size={20} color={colors.textPrimary} />
       </TouchableOpacity>
     </View>
   );
@@ -36,26 +38,31 @@ export default function FloatingCartButton() {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 20,
-    right: 20,
+    bottom: 24,
+    left: 16,
+    right: 16,
     zIndex: 100,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 30,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    elevation: 4,
+    justifyContent: 'center',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    shadowColor: colors.primaryDark,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
   totalText: {
-    fontSize: 18,
-    fontWeight: 'normal',
-    fontFamily: 'Unbounded-Regular',
+    fontSize: 16,
+    fontFamily: fontFamily.semiBold,
     marginRight: 8,
-    color: '#1E1E1E',
-  },
-  icon: {
-    marginLeft: 4,
+    color: colors.textPrimary,
   },
 });

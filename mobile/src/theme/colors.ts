@@ -1,13 +1,13 @@
 export const colors = {
-  // Основные цвета на основе логотипа
-  primary: '#FED07C', // Светло-оранжевый из внешнего кольца логотипа
-  primaryLight: '#FFB366', // Более светлый оранжевый
-  primaryDark: '#E67E22', // Темный оранжевый
+  // Основные цвета в соответствии с дизайном
+  primary: '#FED07C', // Золотисто-желтый основной цвет
+  primaryLight: '#FFE5A5', // Светлее золотистый
+  primaryDark: '#E6B85C', // Темнее золотистый
 
   // Акцентные цвета
-  accent: '#FED07C', // Темно-коричневый из текста логотипа
-  accentLight: '#A0522D', // Светло-коричневый
-  accentDark: '#654321', // Очень темный коричневый
+  accent: '#FED07C', // Золотисто-желтый для акцентов
+  accentLight: '#FFE5A5', // Светло-золотистый
+  accentDark: '#E6B85C', // Темно-золотистый
 
   // Фоновые цвета - все белые для чистоты
   background: '#FFFFFF', // Белый фон
@@ -28,15 +28,21 @@ export const colors = {
   warning: '#FF9800', // Оранжевый
   warningLight: '#FFB74D',
 
-  // Цвета продуктов на основе логотипа
-  productRed: '#FF5722', // Красный как томат
+  // Цвета продуктов в соответствии с новой схемой
+  productRed: '#FF5722', // Красный как томат (оставляем)
   productRedLight: '#FF8A65',
-  productOrange: '#FF8C42', // Оранжевый как основной цвет
-  productOrangeLight: '#FFB366',
-  productBrown: '#8B4513', // Коричневый как текст
+  productYellow: '#FED07C', // Золотистый как основной
+  productYellowLight: '#FFE5A5',
+  productBrown: '#8B4513', // Коричневый (оставляем)
   productBrownLight: '#A0522D',
-  productGreen: '#4CAF50', // Зеленый как салат
+  productGreen: '#4CAF50', // Зеленый (оставляем)
   productGreenLight: '#81C784',
+  productBlue: '#2196F3', // Синий
+  productBlueLight: '#64B5F6',
+  productPurple: '#9C27B0', // Фиолетовый
+  productPurpleLight: '#BA68C8',
+  productTeal: '#00BCD4', // Бирюзовый
+  productTealLight: '#4DD0E1',
 
   // Градации серого на основе коричневой палитры
   gray50: '#FAFAFA',
@@ -50,14 +56,14 @@ export const colors = {
   gray800: '#424242',
   gray900: '#212121',
 
-  // Градиенты для категорий продуктов на основе новой палитры
+  // Градиенты для категорий продуктов на основе новой золотистой палитры
   gradients: {
-    shaurma: ['#FF8C42', '#FFB366'] as [string, string],
-    'курица': ['#FFB366', '#FFCC80'] as [string, string],
+    shaurma: ['#FED07C', '#FFE5A5'] as [string, string],
+    'курица': ['#FFE5A5', '#FFF0C4'] as [string, string],
     'говядина': ['#8B4513', '#A0522D'] as [string, string],
     'морепродукты': ['#26A69A', '#4DB6AC'] as [string, string],
     'острая': ['#FF5722', '#FF8A65'] as [string, string],
-    'сыр': ['#FFB300', '#FFC107'] as [string, string],
+    'сыр': ['#FED07C', '#FFE5A5'] as [string, string],
     'большая': ['#9C27B0', '#BA68C8'] as [string, string],
     'картофель': ['#FF9800', '#FFB74D'] as [string, string],
     'грибы': ['#795548', '#8D6E63'] as [string, string],
@@ -80,22 +86,22 @@ export const colors = {
     'манго': ['#FFB74D', '#FFC107'] as [string, string],
     'пахлава': ['#D2691E', '#CD853F'] as [string, string],
     'вегетарианская': ['#4CAF50', '#66BB6A'] as [string, string],
-    // Основные категории
-    snacks: ['#FFB366', '#FFCC80'] as [string, string],
-    burger: ['#FF8C42', '#FFB366'] as [string, string],
+    // Основные категории с золотистой палитрой
+    snacks: ['#FED07C', '#FFE5A5'] as [string, string],
+    burger: ['#FED07C', '#FFE5A5'] as [string, string],
     drink: ['#26A69A', '#4DB6AC'] as [string, string],
-    sauces: ['#FF9800', '#FFB74D'] as [string, string],
+    sauces: ['#FED07C', '#FFE5A5'] as [string, string],
     bablshaurma: ['#E91E63', '#F06292'] as [string, string],
     dessert: ['#AB47BC', '#BA68C8'] as [string, string],
     seafood: ['#00BCD4', '#26C6DA'] as [string, string],
-    pizza: ['#FF6B6B', '#FF8E8E'] as [string, string],
+    pizza: ['#FED07C', '#FFE5A5'] as [string, string],
     sushi: ['#4FC3F7', '#81D4FA'] as [string, string],
-    pasta: ['#FF8C42', '#FFB366'] as [string, string],
+    pasta: ['#FED07C', '#FFE5A5'] as [string, string],
     salad: ['#66BB6A', '#81C784'] as [string, string],
     coffee: ['#8D6E63', '#A1887F'] as [string, string],
-    breakfast: ['#FFB366', '#FFCC80'] as [string, string],
+    breakfast: ['#FED07C', '#FFE5A5'] as [string, string],
     lunch: ['#4CAF50', '#66BB6A'] as [string, string],
-    dinner: ['#FF8C42', '#FFB366'] as [string, string],
-    food: ['#FF8C42', '#FFB366'] as [string, string],
+    dinner: ['#FED07C', '#FFE5A5'] as [string, string],
+    food: ['#FED07C', '#FFE5A5'] as [string, string],
   },
 };

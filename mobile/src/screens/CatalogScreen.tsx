@@ -9,7 +9,8 @@ import {
   RefreshControl,
   StatusBar,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
+  findNodeHandle
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,9 +19,10 @@ import { CatalogStackParamList } from './CatalogWrapper';
 import ProductCard from '../components/ProductCard';
 import CategoryFilter from '../components/CategoryFilter';
 import ProductModal from '../components/ProductModal';
-import PromoBanner from '../components/PromoBanner';
+import Stories from '../components/Stories';
 import { useCart } from '../context/CartContext';
 import { useTheme } from '../theme/ThemeProvider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FloatingCartButton from '../components/FloatingCartButton';
 
 type CatalogScreenNavigationProp = NativeStackNavigationProp<CatalogStackParamList, 'CatalogMain'>;
@@ -1142,6 +1144,8 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
   const theme = useTheme();
   const { addItem } = useCart();
   
+  const insets = useSafeAreaInsets();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -1157,6 +1161,7 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
   const headerRef = useRef<View>(null);
   const categoriesRef = useRef<View>(null);
   const categoryPositions = useRef<{ [key: string]: number }>({});
+  const categoryRefs = useRef<{ [key: string]: React.RefObject<View> }>({});
   const isScrollingToCategory = useRef(false);
 
   useEffect(() => {
@@ -1215,25 +1220,41 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
     setSelectedCategory(categoryId);
     setActiveCategory(categoryId);
     
-    // Прокручиваем к выбранной категории с точным отступом
-    if (categoryId && categoryPositions.current[categoryId]) {
-      isScrollingToCategory.current = true;
-      const stickyOffset = headerHeight + categoriesHeight + 2; // Хедер + категории + 2px
-      scrollViewRef.current?.scrollTo({
-        y: categoryPositions.current[categoryId] - stickyOffset,
-        animated: true,
-      });
-      
-      // Сбрасываем флаг через небольшую задержку
-      setTimeout(() => {
-        isScrollingToCategory.current = false;
-      }, 500);
-    }
+    // Прокручиваем к выбранной категории
+    const doScroll = () => {
+      if (categoryId && categoryPositions.current[categoryId] != null) {
+        isScrollingToCategory.current = true;
+        const stickyOffset = headerHeight + categoriesHeight + insets.top + 2;
+        const extra = 8; // дополнительный отступ, чтобы заголовок был полностью виден
+        scrollViewRef.current?.scrollTo({
+          y: Math.max(0, categoryPositions.current[categoryId] - stickyOffset - extra),
+          animated: true,
+        });
+        setTimeout(() => {
+          isScrollingToCategory.current = false;
+        }, 500);
+      } else {
+        // если позиция ещё не измерена (секция не в зоне рендеринга)
+        measureAndScroll(categoryId);
+      }
+    };
+    requestAnimationFrame(doScroll);
   };
 
   const onCategoryLayout = (categoryId: string, event: any) => {
     const { y } = event.nativeEvent.layout;
     categoryPositions.current[categoryId] = y;
+  };
+
+  const measureAndScroll = (categoryId: string) => {
+    const ref = categoryRefs.current[categoryId];
+    if (!ref?.current) return;
+    const scrollNode = findNodeHandle(scrollViewRef.current);
+    ref.current.measureLayout(scrollNode as number, (x, y) => {
+      categoryPositions.current[categoryId] = y;
+      const stickyOffset = headerHeight + categoriesHeight + insets.top + 2;
+      scrollViewRef.current?.scrollTo({ y: Math.max(0, y - stickyOffset - 8), animated: true });
+    }, () => {});
   };
 
   const handleScroll = (event: any) => {
@@ -1248,7 +1269,7 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
 
     // Автоматическое переключение активной категории при скролле
     if (!isScrollingToCategory.current) {
-      const stickyOffset = headerHeight + categoriesHeight + 2;
+      const stickyOffset = headerHeight + categoriesHeight + insets.top + 2;
       const scrollPosition = offsetY + stickyOffset;
       
       // Находим активную категорию на основе позиции скролла
@@ -1305,7 +1326,7 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
       
       {/* Баннеры с акциями */}
       <View style={styles.promoSection}>
-        <PromoBanner onPress={() => {}} />
+        <Stories />
       </View>
     </View>
   );
@@ -1318,8 +1339,14 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
     if (categoryProducts.length === 0) return null;
 
     return (
-      <View 
-        key={category.id} 
+      <View
+        key={category.id}
+        ref={(() => {
+          if (!categoryRefs.current[category.id]) {
+            categoryRefs.current[category.id] = React.createRef<View>() as React.RefObject<View>;
+          }
+          return categoryRefs.current[category.id];
+        })()}
         style={styles.categorySection}
         onLayout={(event) => onCategoryLayout(category.id, event)}
       >
@@ -1361,7 +1388,7 @@ export default function CatalogScreen({ navigation }: CatalogScreenProps) {
       <SafeAreaView style={styles.safeArea}>
         {/* Закрепленные категории в шапке (показываются только при скроллинге) */}
         {isCategoriesSticky && (
-          <View style={[styles.stickyCategories, { top: 2 }]}>
+          <View style={[styles.stickyCategories, { top: insets.top }]}>
             <CategoryFilter
               categories={categories}
               selectedCategory={activeCategory}

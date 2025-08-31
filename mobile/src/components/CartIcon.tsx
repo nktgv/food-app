@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { ShoppingBagIcon } from './icons';
 import { useTheme } from '../theme/ThemeProvider';
 import { useCart } from '../context/CartContext';
 
@@ -17,8 +17,7 @@ export default function CartIcon({ focused, color, size }: CartIconProps) {
 
   return (
     <View style={styles.container}>
-      <Ionicons 
-        name={focused ? 'cart' : 'cart-outline'} 
+      <ShoppingBagIcon 
         size={size} 
         color={color} 
       />

@@ -13,7 +13,58 @@ export const useCustomFonts = () => {
 
   React.useEffect(() => {
     if (fontsLoaded) {
-      // Apply globally to Text and TextInput
+      const mapWeightToFamily = (style: any) => {
+        if (!style) return style;
+        const weight = style.fontWeight ?? null;
+        if (!weight) return style;
+
+        const weightKey = String(weight);
+        let family = 'Unbounded-Regular';
+        switch (weightKey) {
+          case 'bold':
+          case '700':
+          case '800':
+            family = 'Unbounded-Bold';
+            break;
+          case '600':
+          case 'semiBold':
+            family = 'Unbounded-SemiBold';
+            break;
+          case '500':
+          case 'medium':
+            family = 'Unbounded-Medium';
+            break;
+          case '300':
+          case 'light':
+            family = 'Unbounded-Light';
+            break;
+          default:
+            family = 'Unbounded-Regular';
+        }
+        const { fontWeight, ...rest } = style;
+        return { ...rest, fontFamily: family };
+      };
+
+      const patchRender = (Component: any) => {
+        if (Component.__patched_for_unbounded) return;
+        const oldRender = Component.render;
+        Component.render = function (...args: any[]) {
+          const origin = oldRender.apply(this, args);
+          const originStyle = origin.props.style;
+          let newStyle;
+          if (Array.isArray(originStyle)) {
+            newStyle = originStyle.map(mapWeightToFamily);
+          } else {
+            newStyle = mapWeightToFamily(originStyle);
+          }
+          return React.cloneElement(origin, { style: newStyle });
+        };
+        Component.__patched_for_unbounded = true;
+      };
+
+      patchRender(Text);
+      patchRender(TextInput);
+
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       if (Text?.defaultProps == null) Text.defaultProps = {};

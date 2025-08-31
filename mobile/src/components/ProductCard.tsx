@@ -38,18 +38,7 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
 
   const getGradientColors = (): [string, string] => {
     const tag = product.tags?.[0]?.toLowerCase() || 'food';
-    const gradients: { [key: string]: [string, string] } = {
-      pizza: ['#FF8C42', '#FFB366'], // Оранжевые цвета логотипа
-      burger: ['#FFB366', '#FFCC80'], // Светло-оранжевые
-      sushi: ['#26A69A', '#4DB6AC'], // Бирюзовый
-      pasta: ['#FF8C42', '#FFB366'], // Основные оранжевые
-      salad: ['#4CAF50', '#66BB6A'], // Зеленый
-      dessert: ['#AB47BC', '#BA68C8'], // Фиолетовый
-      drink: ['#26A69A', '#4DB6AC'], // Бирюзовый
-      food: ['#FF8C42', '#FFB366'], // Основные оранжевые
-    };
-    
-    return gradients[tag] || gradients.food;
+    return colors.gradients[tag as keyof typeof colors.gradients] || colors.gradients.food;
   };
 
   const getProductWeight = () => {
@@ -83,29 +72,18 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
   };
 
   return (
-    <TouchableOpacity style={[styles.card, { backgroundColor: theme.colors.surface, shadowColor: theme.colors.gray900 }]} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity style={[styles.card, { backgroundColor: theme.colors.surface, shadowColor: theme.colors.gray300 }]} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.imageContainer}>
         {getImageSource() ? (
           <Image source={getImageSource()!} style={styles.image} resizeMode="cover" />
         ) : (
           <Placeholder type={product.tags?.[0] || 'food'} style={styles.image} />
         )}
-        <LinearGradient
-          colors={getGradientColors()}
-          style={styles.gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        />
         <View style={styles.priceContainer}>
           <Text style={styles.price}>
             {product.base_price} {product.currency}
           </Text>
         </View>
-        {product.tags && product.tags.length > 0 && (
-          <View style={styles.tagContainer}>
-            <Text style={styles.tag}>{product.tags[0].toUpperCase()}</Text>
-          </View>
-        )}
       </View>
       
       <View style={styles.content}>
@@ -124,19 +102,14 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
         
         {currentQuantity === 0 ? (
           <TouchableOpacity 
-            style={styles.addButton}
+            style={[styles.addButton, { backgroundColor: colors.primary }]}
             onPress={handleAddToCart}
             activeOpacity={0.8}
           >
-            <LinearGradient
-              colors={getGradientColors()}
-              style={styles.addButtonGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-                             <Text style={[styles.addButtonText, { color: colors.surface }]}>{product.base_price} ₽</Text>
-              <Ionicons name="chevron-forward" size={16} color={theme.colors.surface} />
-            </LinearGradient>
+            <Text style={[styles.addButtonText, { color: colors.textPrimary }]}>
+              {product.base_price} ₽
+            </Text>
+            <Ionicons name="add" size={16} color={colors.textPrimary} />
           </TouchableOpacity>
         ) : (
           <View style={styles.quantityContainer}>
@@ -167,68 +140,48 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
 const styles = StyleSheet.create({
   card: {
     width: cardWidth,
-    borderRadius: 16,
+    borderRadius: 12,
     marginBottom: 16,
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 1,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.gray200,
   },
   imageContainer: {
     position: 'relative',
-    height: 140,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    height: 120,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
     overflow: 'hidden',
+    backgroundColor: colors.gray100,
   },
   image: {
     width: '100%',
     height: '100%',
   },
-  gradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.4,
-  },
   priceContainer: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-    shadowColor: '#000',
+    top: 8,
+    right: 8,
+    backgroundColor: colors.background,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    shadowColor: colors.gray400,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 1,
   },
   price: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  tagContainer: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  tag: {
-    color: colors.surface,
+    color: colors.textPrimary,
     fontSize: 12,
     fontWeight: '600',
-    letterSpacing: 0.5,
   },
   content: {
     padding: 16,
@@ -251,64 +204,47 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   addButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  addButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    minHeight: 48,
+    minHeight: 44,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   addButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    flex: 1,
-    textAlign: 'center',
-  },
-  arrowIcon: {
-    marginLeft: 4,
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 4,
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 48,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: colors.gray100,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minHeight: 44,
   },
   quantityButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
   },
   quantityText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.primary,
-    minWidth: 40,
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    minWidth: 32,
     textAlign: 'center',
   },
 });

@@ -1,24 +1,24 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   Modal,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
-  Animated,
+  ScrollView,
   Image,
-  Alert
+  Dimensions,
+  SafeAreaView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../api/client';
+import { colors } from '../theme/colors';
+import { fontFamily } from '../theme/typography';
 import { useTheme } from '../theme/ThemeProvider';
 import { useCart } from '../context/CartContext';
 import Placeholder from '../assets/images/placeholder';
 
-const { height: screenHeight } = Dimensions.get('window');
-const modalHeight = screenHeight * 0.85;
+const { width } = Dimensions.get('window');
 
 interface ProductModalProps {
   product: Product | null;
@@ -27,448 +27,321 @@ interface ProductModalProps {
 }
 
 export default function ProductModal({ product, visible, onClose }: ProductModalProps) {
-  const { addItem, getItemQuantity } = useCart();
   const theme = useTheme();
+  const { addItem, getItemQuantity, updateQuantity, state } = useCart();
   const [quantity, setQuantity] = useState(1);
-  const translateY = useRef(new Animated.Value(screenHeight)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
-    if (visible) {
-      setQuantity(1);
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: screenHeight,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [visible]);
+  if (!product) return null;
+
+  const currentQuantity = getItemQuantity(product.id);
 
   const handleAddToCart = () => {
-    if (product) {
+    if (quantity > 0) {
       addItem(product, quantity);
-      Alert.alert(
-        'Добавлено в корзину! 🛒',
-        `${product.name} (${quantity} шт.) добавлен в корзину`,
-        [
-          { text: 'Продолжить покупки', style: 'cancel' },
-          { text: 'Перейти в корзину', onPress: onClose }
-        ]
-      );
       onClose();
     }
   };
 
-    const getGradientColors = (): [string, string] => {
-    const tag = product?.tags?.[0]?.toLowerCase() || 'food';
-    return theme.colors.gradients[tag] || theme.colors.gradients.food;
+  const handleQuantityChange = (newQuantity: number) => {
+    setQuantity(Math.max(1, newQuantity));
   };
 
-  const currentQuantity = product ? getItemQuantity(product.id) : 0;
+  const getImageSource = () => {
+    if (product.media && product.media.length > 0) {
+      return { uri: product.media[0] };
+    }
+    return null;
+  };
 
-  if (!product) return null;
+  const getProductWeight = () => {
+    return product.weight || 450;
+  };
+
+  const getTotalPrice = () => {
+    return product.base_price * quantity;
+  };
 
   return (
     <Modal
+      animationType="slide"
+      transparent={false}
       visible={visible}
-      transparent
-      animationType="none"
       onRequestClose={onClose}
+      statusBarTranslucent
     >
-      <Animated.View style={[styles.overlay, { opacity }]}>
-        <TouchableOpacity 
-          style={styles.backdrop} 
-          activeOpacity={1} 
-          onPress={onClose}
-        />
-        
-        <Animated.View 
-          style={[
-            styles.modalContainer,
-            {
-              backgroundColor: theme.colors.surface,
-              transform: [{ translateY }],
-            },
-          ]}
-        >
-          {/* Handle bar */}
-          <View style={[styles.handleBar, { backgroundColor: theme.colors.surface }]}>
-            <View style={[styles.handle, { backgroundColor: theme.colors.gray300 }]} />
-          </View>
+      <SafeAreaView style={styles.container}>
+        {/* Header with close button */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
 
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
           {/* Product Image */}
           <View style={styles.imageContainer}>
-            {product.media && product.media.length > 0 ? (
-              <Image source={{ uri: product.media[0] }} style={styles.image} resizeMode="cover" />
+            {getImageSource() ? (
+              <Image source={getImageSource()!} style={styles.image} resizeMode="cover" />
             ) : (
               <Placeholder type={product.tags?.[0] || 'food'} style={styles.image} />
             )}
-            <LinearGradient
-              colors={getGradientColors()}
-              style={styles.gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            />
-            
-            {/* Close button */}
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Ionicons name="close" size={24} color="#fff" />
-            </TouchableOpacity>
-
-            {/* Price */}
-            <View style={[styles.priceContainer, { backgroundColor: 'rgba(255, 255, 255, 0.95)' }]}>
-              <Text style={[styles.price, { color: theme.colors.primary }]}>
-                {product.base_price} {product.currency}
-              </Text>
-            </View>
           </View>
 
-          {/* Content */}
-          <View style={[styles.content, { backgroundColor: theme.colors.surface }]}>
-            <Text style={[styles.name, { color: theme.colors.textPrimary }]}>{product.name}</Text>
-            <Text style={[styles.description, { color: theme.colors.textSecondary }]}>{product.description}</Text>
-            
-            {/* Tags */}
-            {product.tags && product.tags.length > 0 && (
-              <View style={styles.tagsContainer}>
-                {product.tags.map((tag, index) => (
-                  <View key={index} style={[styles.tag, { backgroundColor: theme.colors.gray100 }]}>
-                    <Text style={[styles.tagText, { color: theme.colors.textSecondary }]}>{tag}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
+          {/* Product Details */}
+          <View style={styles.content}>
+            <Text style={styles.title}>{product.name}</Text>
+            <Text style={styles.weight}>{getProductWeight()} г</Text>
+            <Text style={styles.description}>{product.description}</Text>
 
-            {/* Quantity Selector */}
-            <View style={[styles.quantityContainer, { backgroundColor: theme.colors.gray100 }]}>
-              <Text style={[styles.quantityLabel, { color: theme.colors.textPrimary }]}>Количество:</Text>
-              <View style={styles.quantitySelector}>
-                <TouchableOpacity
-                  style={[styles.quantityButton, { borderColor: quantity <= 1 ? '#ccc' : theme.colors.primary }, quantity <= 1 && styles.quantityButtonDisabled]}
-                  onPress={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={quantity <= 1}
-                >
-                  <Ionicons name="remove" size={20} color={quantity <= 1 ? '#ccc' : theme.colors.primary} />
-                </TouchableOpacity>
-                
-                <Text style={[styles.quantityText, { color: theme.colors.textPrimary }]}>{quantity}</Text>
-                
-                <TouchableOpacity
-                  style={[styles.quantityButton, { borderColor: theme.colors.primary }]}
-                  onPress={() => setQuantity(quantity + 1)}
-                >
-                  <Ionicons name="add" size={20} color={theme.colors.primary} />
-                </TouchableOpacity>
+            {/* Nutritional info placeholder */}
+            <View style={styles.nutritionContainer}>
+              <Text style={styles.nutritionTitle}>Добавки к шаурме</Text>
+              <Text style={styles.nutritionSubtitle}>кетчуп +25 ₽</Text>
+              
+              <View style={styles.nutritionGrid}>
+                <View style={styles.nutritionItem}>
+                  <Text style={styles.nutritionValue}>50</Text>
+                  <Text style={styles.nutritionLabel}>белки</Text>
+                </View>
+                <View style={styles.nutritionItem}>
+                  <Text style={styles.nutritionValue}>50</Text>
+                  <Text style={styles.nutritionLabel}>жиры</Text>
+                </View>
+                <View style={styles.nutritionItem}>
+                  <Text style={styles.nutritionValue}>50</Text>
+                  <Text style={styles.nutritionLabel}>калории</Text>
+                </View>
+                <View style={styles.nutritionItem}>
+                  <Text style={styles.nutritionValue}>50</Text>
+                  <Text style={styles.nutritionLabel}>углеводы</Text>
+                </View>
               </View>
             </View>
 
-            {/* Current cart quantity */}
+            {/* Ingredients toggle placeholder */}
+            <TouchableOpacity style={styles.ingredientsToggle}>
+              <Text style={styles.ingredientsText}>Комментарии к заказу</Text>
+              <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            {/* Current cart info */}
             {currentQuantity > 0 && (
               <View style={styles.cartInfo}>
-                <Ionicons name="cart-outline" size={16} color={theme.colors.textSecondary} />
-                <Text style={[styles.cartInfoText, { color: theme.colors.textSecondary }]}>
+                <Ionicons name="basket-outline" size={16} color={colors.primary} />
+                <Text style={styles.cartInfoText}>
                   В корзине: {currentQuantity} шт.
                 </Text>
               </View>
             )}
+          </View>
+        </ScrollView>
 
-            {/* Variants */}
-            {product.variants && product.variants.length > 0 && (
-              <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Размеры</Text>
-                {product.variants.map(variant => (
-                  <View key={variant.id} style={[styles.variantItem, { borderBottomColor: theme.colors.divider }]}>
-                    <Text style={[styles.variantName, { color: theme.colors.textPrimary }]}>{variant.name}</Text>
-                    <Text style={[styles.variantPrice, { color: theme.colors.primary }]}>
-                      {variant.price_delta > 0 ? '+' : ''}{variant.price_delta} {product.currency}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* Allergens */}
-            {product.allergens && product.allergens.length > 0 && (
-              <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: theme.colors.textPrimary }]}>Аллергены</Text>
-                <View style={styles.allergensContainer}>
-                  {product.allergens.map((allergen, index) => (
-                    <View key={index} style={[styles.allergenTag, { backgroundColor: '#FFEBEE' }]}>
-                      <Text style={[styles.allergenText, { color: '#D32F2F' }]}>{allergen}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
-
-            {/* Add to cart button */}
+        {/* Bottom actions */}
+        <View style={styles.bottomContainer}>
+          {/* Quantity controls */}
+          <View style={styles.quantityRow}>
             <TouchableOpacity 
-              style={styles.addToCartButton}
-              onPress={handleAddToCart}
-              activeOpacity={0.8}
+              style={[styles.quantityButton, { opacity: quantity <= 1 ? 0.5 : 1 }]}
+              onPress={() => handleQuantityChange(quantity - 1)}
+              disabled={quantity <= 1}
             >
-              <LinearGradient
-                colors={getGradientColors()}
-                style={styles.buttonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Ionicons name="cart-outline" size={20} color="#fff" />
-                <Text style={styles.addToCartText}>
-                  Добавить в корзину • {product.base_price * quantity} {product.currency}
-                </Text>
-              </LinearGradient>
+              <Text style={styles.quantityButtonText}>-</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.quantityDisplay}>
+              {quantity}x {product.base_price} ₽
+            </Text>
+            
+            <TouchableOpacity 
+              style={styles.quantityButton}
+              onPress={() => handleQuantityChange(quantity + 1)}
+            >
+              <Text style={styles.quantityButtonText}>+</Text>
             </TouchableOpacity>
           </View>
-        </Animated.View>
-      </Animated.View>
+
+          {/* Add to cart button */}
+          <TouchableOpacity 
+            style={[styles.addToCartButton, { backgroundColor: colors.primary }]}
+            onPress={handleAddToCart}
+          >
+            <Text style={styles.addToCartText}>{getTotalPrice()} ₽</Text>
+            <Ionicons name="add" size={20} color={colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  container: {
     flex: 1,
-    justifyContent: 'flex-end',
+    backgroundColor: colors.background,
   },
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
-  },
-  modalContainer: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderWidth: 3,
-    borderBottomWidth: 0,
-    borderColor: '#FF5722',
-    height: modalHeight,
-    overflow: 'hidden',
-  },
-  handleBar: {
-    alignItems: 'center',
+  header: {
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray200,
   },
-  handle: {
+  closeButton: {
     width: 40,
-    height: 4,
-    backgroundColor: '#ddd',
-    borderRadius: 2,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.gray100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scrollView: {
+    flex: 1,
   },
   imageContainer: {
-    position: 'relative',
-    height: 200,
+    height: 250,
+    backgroundColor: colors.gray100,
+    marginHorizontal: 16,
+    marginVertical: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   image: {
     width: '100%',
     height: '100%',
   },
-  gradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.3,
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  priceContainer: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  price: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF5722',
-  },
   content: {
-    flex: 1,
-    padding: 20,
+    padding: 16,
   },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+  title: {
+    fontSize: 22,
+    fontFamily: fontFamily.bold,
+    color: colors.textPrimary,
     marginBottom: 8,
-    lineHeight: 28,
+  },
+  weight: {
+    fontSize: 14,
+    fontFamily: fontFamily.medium,
+    color: colors.textSecondary,
+    marginBottom: 12,
   },
   description: {
     fontSize: 16,
-    color: '#666',
-    lineHeight: 22,
-    marginBottom: 16,
+    fontFamily: fontFamily.regular,
+    color: colors.textSecondary,
+    lineHeight: 24,
+    marginBottom: 24,
   },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 20,
+  nutritionContainer: {
+    marginBottom: 24,
   },
-  tag: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
+  nutritionTitle: {
+    fontSize: 16,
+    fontFamily: fontFamily.semiBold,
+    color: colors.textPrimary,
     marginBottom: 8,
   },
-  tagText: {
+  nutritionSubtitle: {
     fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  quantityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    fontFamily: fontFamily.regular,
+    color: colors.textSecondary,
     marginBottom: 16,
-    paddingVertical: 12,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    paddingHorizontal: 16,
   },
-  quantityLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  quantitySelector: {
+  nutritionGrid: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  nutritionItem: {
     alignItems: 'center',
+    flex: 1,
   },
-  quantityButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
+  nutritionValue: {
+    fontSize: 16,
+    fontFamily: fontFamily.bold,
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  nutritionLabel: {
+    fontSize: 12,
+    fontFamily: fontFamily.regular,
+    color: colors.textSecondary,
+  },
+  ingredientsToggle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#FF5722',
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray200,
   },
-  quantityButtonDisabled: {
-    borderColor: '#ccc',
-  },
-  quantityText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginHorizontal: 20,
-    minWidth: 30,
-    textAlign: 'center',
+  ingredientsText: {
+    fontSize: 16,
+    fontFamily: fontFamily.medium,
+    color: colors.textPrimary,
   },
   cartInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    backgroundColor: colors.gray100,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#E3F2FD',
     borderRadius: 8,
+    marginTop: 16,
   },
   cartInfoText: {
     fontSize: 14,
-    color: '#1976D2',
+    fontFamily: fontFamily.medium,
+    color: colors.textPrimary,
     marginLeft: 8,
   },
-  section: {
-    marginBottom: 20,
+  bottomContainer: {
+    padding: 16,
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray200,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  variantItem: {
+  quantityRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
-  variantName: {
-    fontSize: 16,
-    color: '#333',
+  quantityButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.gray200,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  variantPrice: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FF5722',
+  quantityButtonText: {
+    fontSize: 20,
+    fontFamily: fontFamily.bold,
+    color: colors.textPrimary,
   },
-  allergensContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  allergenTag: {
-    backgroundColor: '#FFEBEE',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  allergenText: {
-    fontSize: 14,
-    color: '#D32F2F',
-    fontWeight: '500',
+  quantityDisplay: {
+    fontSize: 18,
+    fontFamily: fontFamily.semiBold,
+    color: colors.textPrimary,
   },
   addToCartButton: {
-    marginTop: 'auto',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  buttonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 24,
+    shadowColor: colors.primaryDark,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   addToCartText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
-    marginLeft: 8,
+    fontSize: 16,
+    fontFamily: fontFamily.semiBold,
+    color: colors.textPrimary,
+    marginRight: 8,
   },
 });

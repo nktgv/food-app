@@ -1,8 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import GridIcon from '../../assets/icons/menu-navigation-grid-1528-svgrepo-com.svg';
-import UserIcon from '../../assets/icons/user_icon_150670.svg';
-import InfoIcon from '../../assets/icons/info_badged_filled_icon_142884.svg';
+import { Text } from 'react-native';
+import { GridIcon, UserIcon, InfoIcon } from '../components/icons';
 import CatalogWrapper from '../screens/CatalogWrapper';
 import ProfileWrapper from '../screens/ProfileWrapper';
 import AboutScreen from '../screens/AboutScreen';
@@ -22,27 +21,30 @@ export default function Tabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ color }) => {
-          const iconProps = { width: 28, height: 28, fill: color, stroke: color, color };
+        tabBarIcon: ({ color, focused }) => {
+          const iconSize = 28;
           if (route.name === 'Catalog') {
-            return <GridIcon {...iconProps} />;
+            return <GridIcon size={iconSize} color={color} />;
           }
           if (route.name === 'Profile') {
-            return <UserIcon {...iconProps} />;
+            return <UserIcon size={iconSize} color={color} />;
           }
           if (route.name === 'About') {
-            return <InfoIcon {...iconProps} />;
+            return <InfoIcon size={iconSize} color={color} />;
           }
           return null;
         },
-        tabBarActiveTintColor: '#262626',
-        tabBarInactiveTintColor: '#6A6A6A',
+        tabBarActiveTintColor: theme.colors.textPrimary,
+        tabBarInactiveTintColor: theme.colors.textSecondary,
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: '#D7D7D7',
-          borderTopWidth: 0,
+          backgroundColor: theme.colors.background,
+          borderTopWidth: 1,
+          borderTopColor: theme.colors.gray200,
           height: 80,
+          paddingTop: 8,
+          paddingBottom: 20,
         },
       })}
     >

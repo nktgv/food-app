@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, Button, ActivityIndicator, SafeAreaView, Alert, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, SafeAreaView, Alert, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { api, CheckoutQuote } from '../api/client';
 import { CatalogStackParamList } from './CatalogWrapper';
 import { useTheme } from '../theme/ThemeProvider';
+import AppButton from '../components/AppButton';
 
 type CheckoutScreenNavigationProp = NativeStackNavigationProp<CatalogStackParamList, 'Checkout'>;
 
@@ -65,7 +66,7 @@ export default function CheckoutScreen({ navigation }: CheckoutScreenProps) {
 				</Text>
 
 				<View style={styles.buttonContainer}>
-					<Button 
+					<AppButton 
 						title="Получить квоту доставки" 
 						onPress={onQuote}
 						color={theme.colors.primary}
@@ -108,7 +109,7 @@ export default function CheckoutScreen({ navigation }: CheckoutScreenProps) {
 				)}
 
 				<View style={styles.bottomContainer}>
-					<Button 
+					<AppButton 
 						title="Разместить заказ" 
 						onPress={onPlace}
 						color={theme.colors.success}
